@@ -1,16 +1,21 @@
-import type { Metadata } from "next";
+// src/app/layout.tsx
 import "./globals.css";
+import type { Metadata } from "next";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import FaqSection from "./components/Faq";
+import Hero from "./components/Hero";
+import LeadInquirySection from "./components/Inquiry";
+import PredictableGrowthSection from "./components/OurProcesses";
+import ResultsCarousel from "./components/Results";
+import ServicesSection from "./components/Services";
+import StatsSection from "./components/State";
+import TestimonialsSection from "./components/Testimonilas";
 
 export const metadata: Metadata = {
-  title: "ZSIDEO — Digital Content & Platforms",
-  description:
-    "Websites, webapps, AI agents, chatbots, SEO, hosting, and CRM portals.",
-  icons: { icon: "/favicon.ico" },
+  title: "TruScope",
+  description: "Marketing site",
 };
-
-const NAV_H = 72;
 
 export default function RootLayout({
   children,
@@ -18,17 +23,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="h-full">
-      <body
-        suppressHydrationWarning
-        className="min-h-screen bg-[#01161D] text-white"
-      >
-        {/* Transparent, non-sticky header overlays hero */}
-        <Navbar logoSrc="/images/logo 1.svg" logoSize={70} navHeight={NAV_H} />
+    <html lang="en" className="scroll-smooth pl-10 pr-10 pb-10">
+      <body className="min-h-screen bg-white antialiased">
+        <Navbar />
 
-        {/* Remove the top padding since nav is NOT fixed/sticky */}
-        <main>{children}</main>
-
+        {children}
         <Footer />
       </body>
     </html>

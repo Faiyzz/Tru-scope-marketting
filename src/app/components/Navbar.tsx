@@ -1,129 +1,134 @@
+// components/Navbar.tsx
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Menu, X } from "lucide-react";
-import { useState } from "react";
-import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 
-type NavbarProps = {
-  logoSrc?: string;
-  logoAlt?: string;
-  /** Logo height in px (width auto). Example: 36 */
-  logoSize?: number;
-  /** Navbar height in px. Example: 72 */
-  navHeight?: number;
-};
+type NavItem = { label: string; href: string };
 
-export default function Navbar({
-  logoSrc = "/images/logo 1.svg",
-  logoAlt = "ZSIDEO",
-  logoSize = 36,
-  navHeight = 72,
-}: NavbarProps) {
+const navItems: NavItem[] = [
+  { label: "Services", href: "<ServicesSection/>" },
+  { label: "Results", href: "#results" },
+  { label: "Process", href: "#process" },
+  { label: "Contact", href: "#contact" },
+];
+
+export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const pathname = usePathname();
+  const [atTopShadow, setAtTopShadow] = useState(false);
 
-  const linkBase =
-    "relative transition text-white/80 hover:text-white after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full";
-  const isActive = (href: string) => pathname.startsWith(href);
-  const linkClass = (href: string) =>
-    `${linkBase} ${isActive(href) ? "text-white after:w-full" : ""}`;
+  // add a subtle shadow once the user scrolls a bit
+  useEffect(() => {
+    const onScroll = () => setAtTopShadow(window.scrollY > 6);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   return (
-    <nav
-      className="absolute inset-x-0 top-5 z-50 bg-transparent"
-      style={{ height: navHeight }}
-      aria-label="Primary"
+    <header
+      className={[
+        "sticky top-0 z-50 bg-white/80 backdrop-blur supports-[backdrop-filter]:bg-white/70",
+        "border-b border-black/5",
+        atTopShadow ? "shadow-sm" : "",
+      ].join(" ")}
     >
-      <div className="mx-auto max-w-screen-2xl px-6 md:px-10 lg:px-16 h-full">
-        <div className="flex h-full items-center justify-between">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2" aria-label="Home">
-            <Image
-              src={logoSrc}
-              alt={logoAlt}
-              width={logoSize}
-              height={logoSize}
-              style={{ height: logoSize, width: "auto" }}
-              priority
-            />
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Left: Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-xl font-semibold tracking-tight">
+              <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
+                TruScope
+              </span>
+            </span>
           </Link>
 
-          {/* Center links */}
-          <div className="hidden md:flex items-center gap-10 text-base font-medium ml-auto mr-8">
-            <Link
-              href="/testimonials"
-              className={linkClass("/testimonials")}
-              aria-current={isActive("/testimonials") ? "page" : undefined}
-            >
-              Testimonials
-            </Link>
-            <Link
-              href="/Portfolio"
-              className={linkClass("/portfolio")}
-              aria-current={isActive("/portfolio") ? "page" : undefined}
-            >
-              Portfolio – Our Work
-            </Link>
+          {/* Desktop links */}
+          <div className="hidden items-center gap-8 md:flex">
+            <ul className="flex items-center gap-8 text-sm text-slate-700">
+              {navItems.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    className="inline-block transition-colors hover:text-slate-900"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+
+            <CTA />
           </div>
 
-          {/* Right side: CTA (desktop) + Hamburger (mobile) */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/get-started"
-              className="hidden sm:inline-flex group items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-medium text-[#01161D] shadow-lg shadow-black/20 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-white/30"
-            >
-              <span>Get Started</span>
-              <ArrowRight
-                size={18}
-                className="-rotate-12 transition-transform group-hover:translate-x-0.5 group-hover:-rotate-6"
-              />
-            </Link>
-
+          {/* Mobile: hamburger + CTA (CTA stays visible) */}
+          <div className="flex items-center gap-3 md:hidden">
+            <CTA small />
             <button
-              className="md:hidden inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/20 bg-white/10 text-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white/30"
-              aria-label="Toggle menu"
+              aria-label="Toggle Menu"
+              aria-expanded={open}
               onClick={() => setOpen((s) => !s)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md border border-black/10 bg-white/70 backdrop-blur transition hover:bg-white"
             >
-              {open ? <X size={18} /> : <Menu size={18} />}
+              {/* Simple icon (no extra deps) */}
+              <svg
+                className={`h-5 w-5 transition-transform ${
+                  open ? "rotate-90" : ""
+                }`}
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                {open ? (
+                  <path d="M6 18L18 6M6 6l12 12" />
+                ) : (
+                  <>
+                    <path d="M3 6h18" />
+                    <path d="M3 12h18" />
+                    <path d="M3 18h18" />
+                  </>
+                )}
+              </svg>
             </button>
           </div>
         </div>
-      </div>
 
-      {/* Mobile menu */}
-      {open && (
-        <div className="md:hidden absolute inset-x-0 top-full px-6 pt-2">
-          <div className="mx-auto max-w-screen-2xl rounded-2xl border border-white/15 bg-[#0E2A33]/90 backdrop-blur-md shadow-[0_20px_60px_-20px_rgba(0,0,0,.6)]">
-            <div className="flex flex-col divide-y divide-white/10">
-              <Link
-                href="/testimonials"
-                className="px-5 py-4 text-sm text-white/90 hover:bg-white/5"
-                onClick={() => setOpen(false)}
-                aria-current={isActive("/testimonials") ? "page" : undefined}
-              >
-                Testimonials
-              </Link>
-              <Link
-                href="/portfolio"
-                className="px-5 py-4 text-sm text-white/90 hover:bg-white/5"
-                onClick={() => setOpen(false)}
-                aria-current={isActive("/portfolio") ? "page" : undefined}
-              >
-                Portfolio – Our Work
-              </Link>
-              <Link
-                href="/get-started"
-                className="px-5 py-4 text-sm font-medium text-[#01161D] bg-white rounded-b-2xl hover:opacity-95"
-                onClick={() => setOpen(false)}
-              >
-                Get Started
-              </Link>
-            </div>
+        {/* Mobile menu */}
+        {open && (
+          <div className="md:hidden">
+            <ul className="border-t border-black/5 py-2 text-sm">
+              {navItems.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className="block px-2 py-3 text-slate-700 transition hover:bg-slate-50"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
-        </div>
-      )}
-    </nav>
+        )}
+      </nav>
+    </header>
+  );
+}
+
+function CTA({ small = false }: { small?: boolean }) {
+  // gradient pill with drop shadow on hover
+  const base =
+    "inline-flex items-center justify-center rounded-full font-medium text-white transition " +
+    "bg-gradient-to-r from-sky-400 to-violet-500 focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-400/50";
+  const size = small ? "h-9 px-4 text-sm" : "h-11 px-5 text-sm";
+  const hover =
+    "hover:shadow-[0_8px_24px_rgba(56,189,248,0.35)] hover:-translate-y-0.5 active:translate-y-0";
+  return (
+    <a href="#contact" className={`${base} ${size} ${hover}`}>
+      Free Consultation
+    </a>
   );
 }

@@ -1,16 +1,25 @@
 // src/app/page.tsx
-import HeroSection from "./components/Home";
-import HowItWorks from "./components/HowItWorks";
-import EditingForImpact from "./components/EditingForImpact";
-import ReadyToScaleSection from "./components/scale";
+
+import FaqSection from "./components/Faq";
+import Hero from "./components/Hero";
+import LeadInquirySection from "./components/Inquiry";
+import PredictableGrowthSection from "./components/OurProcesses";
+import ResultsCarousel from "./components/Results";
+import ServicesSection from "./components/Services";
+import StatsSection from "./components/State";
+import TestimonialsSection from "./components/Testimonilas";
 
 export default function Page() {
   return (
     <>
-      <HeroSection />
-      <HowItWorks />
-      <EditingForImpact />
-      <ReadyToScaleSection />
+      <Hero />
+      <StatsSection />
+      <ServicesSection />
+      <ResultsCarousel />
+      <PredictableGrowthSection />
+      <TestimonialsSection />
+      <FaqSection />
+      <LeadInquirySection />
     </>
   );
 }
