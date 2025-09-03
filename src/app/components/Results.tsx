@@ -1,6 +1,13 @@
+// components/ResultsCarousel.tsx
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Star } from "lucide-react";
 
@@ -86,13 +93,10 @@ export default function ResultsCarousel() {
   const [dir, setDir] = useState(0);
   const wrap = (n: number) => (n + RESULTS.length) % RESULTS.length;
 
-  const go = useCallback(
-    (delta: number) => {
-      setDir(delta);
-      setIndex((i) => wrap(i + delta));
-    },
-    [setIndex]
-  );
+  const go = useCallback((delta: number) => {
+    setDir(delta);
+    setIndex((i) => wrap(i + delta));
+  }, []);
 
   // keyboard arrows
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -117,6 +121,41 @@ export default function ResultsCarousel() {
     if (Math.abs(dx) > 40) go(dx < 0 ? 1 : -1);
     startX.current = null;
   };
+
+  // --- Equal-height logic ---
+  const measureRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const [cardMinH, setCardMinH] = useState<number | null>(null);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const heights = measureRefs.current.map((el) => el?.offsetHeight ?? 0);
+      const max = heights.length ? Math.max(...heights) : 0;
+      // Add a tiny buffer to avoid sub-pixel reflows
+      setCardMinH(max ? max + 1 : null);
+    };
+
+    // Measure now
+    measure();
+
+    // Re-measure on container resize
+    const ro = new ResizeObserver(() => measure());
+    if (containerRef.current) ro.observe(containerRef.current);
+
+    // Re-measure on window resize
+    window.addEventListener("resize", measure);
+
+    // Re-measure after fonts load (prevents pop when custom fonts finish)
+    // @ts-ignore
+    if (document.fonts?.ready) {
+      // @ts-ignore
+      document.fonts.ready.then(measure).catch(() => {});
+    }
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    };
+  }, []);
 
   const current = RESULTS[index];
 
@@ -159,6 +198,28 @@ export default function ResultsCarousel() {
             <ChevronRight className="h-5 w-5" />
           </button>
 
+          {/* Hidden measuring clones (same width/styles), do not affect layout */}
+          <div
+            aria-hidden="true"
+            className="absolute -z-10 opacity-0 pointer-events-none"
+            style={{ left: -99999, top: 0, width: "100%" }}
+          >
+            <div className="mx-auto max-w-4xl">
+              {RESULTS.map((r, i) => (
+                <div
+                  key={`measure-${r.id}`}
+                  ref={(el) => {
+                    measureRefs.current[i] = el;
+                  }}
+                  className="rounded-3xl bg-white p-6 ring-1 ring-slate-200 md:p-10"
+                >
+                  <CardContent r={r} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Visible card */}
           <div className="mx-auto max-w-4xl">
             <AnimatePresence initial={false} custom={dir} mode="popLayout">
               <motion.article
@@ -170,38 +231,21 @@ export default function ResultsCarousel() {
                 exit="exit"
                 transition={{ duration: 0.35, ease: "easeOut" }}
                 className="rounded-3xl bg-white p-6 shadow-xl ring-1 ring-slate-200 md:p-10"
+                style={{
+                  // fallback to a reasonable min-height until measured
+                  minHeight:
+                    cardMinH ??
+                    (typeof window !== "undefined"
+                      ? window.innerWidth >= 768
+                        ? 420
+                        : 360
+                      : 360),
+                }}
                 role="group"
                 aria-roledescription="slide"
                 aria-label={`${index + 1} of ${RESULTS.length}`}
               >
-                {/* stars */}
-                <div className="flex items-center justify-center gap-1">
-                  {Array.from({ length: current.rating ?? 5 }).map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-5 w-5 fill-yellow-400 stroke-yellow-400"
-                    />
-                  ))}
-                </div>
-
-                <h3 className="mt-4 text-center text-2xl font-extrabold text-indigo-600 md:text-3xl">
-                  {current.metric}
-                </h3>
-
-                <p className="mx-auto mt-5 max-w-3xl text-center text-slate-700 md:text-lg">
-                  {current.summary}
-                </p>
-
-                <p className="mx-auto mt-6 max-w-3xl text-center italic text-slate-500">
-                  “{current.quote}”
-                </p>
-
-                <div className="mt-8 text-center">
-                  <p className="font-semibold text-slate-900">
-                    {current.author}
-                  </p>
-                  <p className="text-sm text-slate-500">{current.role}</p>
-                </div>
+                <CardContent r={current} />
               </motion.article>
             </AnimatePresence>
           </div>
@@ -227,5 +271,36 @@ export default function ResultsCarousel() {
         </div>
       </div>
     </section>
+  );
+}
+
+/* --- Shared card content (used by visible + measuring clones) --- */
+function CardContent({ r }: { r: ResultCard }) {
+  return (
+    <>
+      {/* stars */}
+      <div className="flex items-center justify-center gap-1">
+        {Array.from({ length: r.rating ?? 5 }).map((_, i) => (
+          <Star key={i} className="h-5 w-5 fill-yellow-400 stroke-yellow-400" />
+        ))}
+      </div>
+
+      <h3 className="mt-4 text-center text-2xl font-extrabold text-indigo-600 md:text-3xl">
+        {r.metric}
+      </h3>
+
+      <p className="mx-auto mt-5 max-w-3xl text-center text-slate-700 md:text-lg">
+        {r.summary}
+      </p>
+
+      <p className="mx-auto mt-6 max-w-3xl text-center italic text-slate-500">
+        “{r.quote}”
+      </p>
+
+      <div className="mt-8 text-center">
+        <p className="font-semibold text-slate-900">{r.author}</p>
+        <p className="text-sm text-slate-500">{r.role}</p>
+      </div>
+    </>
   );
 }
