@@ -15,13 +15,16 @@ export default function Page() {
   return (
     <>
       <Hero />
-      <StatsSection />
+     
       <ServicesVSLSection />
       <CallTeamSection />
+       <StatsSection />
       <TestimonialsSection />
-      <FaqSection />
-      <ReservationSection />
+   
+     
       <PredictableGrowthSection />
+       <ReservationSection />
+         <FaqSection />
     </>
   );
 }
