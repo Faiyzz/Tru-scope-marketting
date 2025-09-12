@@ -1,4 +1,13 @@
 @import "tailwindcss";
+
+
+html{
+  body{
+    margin: 0px;
+    padding: 0px;
+  }
+  
+}
 /* Skeleton shimmer */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
@@ -76,3 +85,13 @@
   animation:shine-sweep 2.2s infinite;
 }
 @keyframes shine-sweep { 0%,60%{transform:translateX(-120%)} 100%{transform:translateX(120%)} }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none; /* IE/Edge */
+  scrollbar-width: none; /* Firefox */
+}
+/* Hide scrollbar but keep scroll functionality */
+.no-scrollbar::-webkit-scrollbar { display: none; }             /* Chrome/Safari/Opera */
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; } /* IE/Edge/Firefox */

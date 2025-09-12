@@ -1,29 +1,35 @@
+// components/TalentServicesSection.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
-  Target,
-  Search,
-  UsersRound,
-  Code2,
-  Check,
+  Palette,
+  Layout,
+  Share2,
+  Clapperboard,
+  ChevronRight,
   LucideIcon,
 } from "lucide-react";
 
-type ServiceItem = {
+/* ---------- Types ---------- */
+type TileItem = {
   title: string;
-  points: string[];
-  note?: string;
+  desc: string;
   Icon: LucideIcon;
+  dark?: boolean;
+  bg?: string;
+  bgPosition?: string;
 };
-type ServicesSectionProps = {
-  kicker?: string;
-  title?: string;
-  subtitle?: string;
-  items?: ServiceItem[];
+
+type Props = {
+  headingLeft?: string;
+  headingRight?: string;
+  items?: TileItem[];
   className?: string;
 };
 
+/* ---------- In-view fade-in (one time) ---------- */
 function useInViewOnce<T extends HTMLElement>(threshold = 0.25) {
   const ref = useRef<T | null>(null);
   const [inView, setInView] = useState(false);
@@ -44,135 +50,151 @@ function useInViewOnce<T extends HTMLElement>(threshold = 0.25) {
   return { ref, inView };
 }
 
-export default function ServicesSection({
-  kicker = "What We Do For You",
-  title = "Comprehensive marketing solutions tailored to your unique business needs",
-  subtitle,
+/* ---------- Component ---------- */
+export default function TalentServicesSection({
+  headingLeft = "Explore Our Expert",
+  headingRight = "Talent",
   className = "",
   items = [
     {
-      title: "Paid Traffic",
-      Icon: Target,
-      points: [
-        "Precision audience targeting",
-        "Conversion-optimized campaigns",
-        "ROI-focused ad spend",
-        "Continuous A/B testing",
-      ],
-      note: "+80% engagement lift",
+      title: "Brand Identity",
+      desc: "Visually and emotionally communicate a brand’s values and personality.",
+      Icon: Palette,
+      bg: "/images/brand.jpg",
+      bgPosition: "center",
     },
     {
-      title: "SEO",
-      Icon: Search,
-      points: [
-        "Organic growth that compounds",
-        "On-page & off-page strategies",
-        "Keyword research & targeting",
-        "Technical SEO optimization",
-      ],
-      note: "+60% search visibility",
+      title: "UI/UX Design",
+      desc: "Crafting visually stunning and user-centric websites.",
+      Icon: Layout,
+      dark: true,
+      bg: "/images/uiux.jpg",
+      bgPosition: "center 30%",
     },
     {
-      title: "Social Media Management",
-      Icon: UsersRound,
-      points: [
-        "Engagement that converts",
-        "Platform-specific strategies",
-        "Community building",
-        "Viral content creation",
-      ],
-      note: "+120% follower growth",
+      title: "Social Media",
+      desc: "Strategize, create, and manage engaging content across platforms to build brand awareness.",
+      Icon: Share2,
+      bg: "/images/social.jpg",
     },
     {
-      title: "Web Development",
-      Icon: Code2,
-      points: [
-        "High-converting experiences",
-        "Custom responsive design",
-        "Fast & SEO-friendly code",
-        "Ongoing support & updates",
-      ],
-      note: "+95% site performance",
+      title: "Animation",
+      desc: "Visually engaging 2D/3D motion graphics and character animation for brands, concepts, or ideas.",
+      Icon: Clapperboard,
+      bg: "/images/animate.jpg",
+      bgPosition: "center 40%",
     },
   ],
-}: ServicesSectionProps) {
-  const { ref, inView } = useInViewOnce<HTMLDivElement>(0.2);
+}: Props) {
+  const { ref, inView } = useInViewOnce<HTMLDivElement>(0.18);
 
   return (
     <section ref={ref} className={`w-full bg-white ${className}`}>
       <div className="mx-auto max-w-7xl px-4 py-14 md:py-20">
-        <header className="mx-auto max-w-3xl text-center">
+        {/* Header (kicker & caption removed, dot removed) */}
+        <div className="mb-8 grid grid-cols-1 items-end gap-6 sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">
-            {kicker}
+            {headingLeft} {headingRight}
           </h2>
-          <p className="mt-3 text-base text-slate-600 md:text-lg">
-            {subtitle ?? title}
-          </p>
-        </header>
+        </div>
 
-        {/* Stretch items so all cards are equal height per row */}
+        {/* Grid */}
         <ul
           className={[
-            "mt-10 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 sm:gap-8 items-stretch",
+            "grid grid-cols-1 gap-6 sm:gap-7 md:grid-cols-2",
             "transition-opacity duration-700",
             inView ? "opacity-100" : "opacity-0",
           ].join(" ")}
         >
-          {items.map((s) => (
-            <li key={s.title} className="h-full">
-              {/* Make the card a flex column + h-full so CTA can stick to bottom */}
-              <article
-                className={[
-                  "group relative flex h-full flex-col rounded-2xl border border-slate-200 bg-white p-6 sm:p-7",
-                  "shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl focus-within:-translate-y-1 focus-within:shadow-xl",
-                ].join(" ")}
-                style={{
-                  background:
-                    "linear-gradient(white, white) padding-box, linear-gradient(180deg, rgba(67,56,202,.12), rgba(168,85,247,.12)) border-box",
-                }}
-              >
-                <div className="mb-5 inline-flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-slate-50 to-slate-100 ring-1 ring-slate-200 transition-transform duration-300 group-hover:scale-105">
-                  <s.Icon
-                    className="h-6 w-6 text-slate-700"
-                    aria-hidden="true"
-                  />
-                </div>
-
-                <h3 className="text-xl font-semibold text-slate-900">
-                  {s.title}
-                </h3>
-
-                <ul className="mt-4 space-y-3">
-                  {s.points.map((p) => (
-                    <li key={p} className="flex gap-3 text-slate-700">
-                      <Check className="mt-0.5 h-5 w-5 text-emerald-500" />
-                      <span>{p}</span>
-                    </li>
-                  ))}
-                </ul>
-
-                {!!s.note && (
-                  <p className="mt-5 text-sm text-slate-500">{s.note}</p>
-                )}
-
-                {/* CTA pinned to bottom with mt-auto */}
-                <div className="mt-auto pt-6">
-                  <a
-                    href="#proposal"
-                    className={[
-                      "inline-flex items-center justify-center rounded-xl px-4 py-2.5 text-sm font-semibold text-white",
-                      "bg-gradient-to-r from-sky-500 to-violet-500",
-                      "shadow-md transition-all duration-300 hover:shadow-xl hover:brightness-[1.05] hover:-translate-y-0.5 active:translate-y-0",
-                    ].join(" ")}
-                  >
-                    Get Proposal
-                  </a>
-                </div>
-              </article>
+          {items.map((it) => (
+            <li key={it.title} className="h-full">
+              <TileCard item={it} />
             </li>
           ))}
         </ul>
       </div>
     </section>
+  );
+}
+
+/* ---------- Tile with image background & high-contrast text ---------- */
+function TileCard({ item }: { item: TileItem }) {
+  const isDark = !!item.dark;
+
+  return (
+    <article
+      className={[
+        "group relative isolate flex h-full min-h-[240px] sm:min-h-[280px] flex-col justify-between overflow-hidden rounded-3xl p-6 md:p-7",
+        "transition-all duration-300 hover:-translate-y-0.5",
+        "border border-black/10 shadow-[0_0.5px_0_rgba(2,6,23,.06),0_8px_24px_rgba(2,6,23,.06)]",
+        "hover:shadow-[0_2px_10px_rgba(2,6,23,.08),0_18px_60px_rgba(2,6,23,.12)]",
+      ].join(" ")}
+    >
+      {/* BG image */}
+      {item.bg && (
+        <Image
+          src={item.bg}
+          alt=""
+          fill
+          priority={false}
+          className="absolute inset-0 -z-20 object-cover transition-transform duration-500 group-hover:scale-[1.05]"
+          style={{ objectPosition: item.bgPosition || "center" }}
+        />
+      )}
+
+      {/* Strong readability overlay on ALL tiles */}
+      <div
+        aria-hidden
+        className={[
+          "absolute inset-0 -z-10 transition-opacity duration-500",
+          isDark
+            ? "bg-gradient-to-br from-black/75 via-black/55 to-black/30"
+            : "bg-gradient-to-br from-black/65 via-black/40 to-black/25",
+          "backdrop-blur-[1px]",
+        ].join(" ")}
+      />
+
+      {/* Hover ring accent */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/10 transition group-hover:ring-purple-500/30"
+      />
+
+      {/* Content */}
+      <div className="relative z-10">
+        <div
+          className={[
+            "mb-4 inline-flex h-11 w-11 items-center justify-center rounded-full ring-1",
+            "bg-white/15 text-white ring-white/25 backdrop-blur-[1px]",
+          ].join(" ")}
+        >
+          <item.Icon className="h-5 w-5" />
+        </div>
+
+        {/* Title — WHITE + larger + drop shadow */}
+        <h3 className="text-2xl md:text-3xl font-semibold text-white filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.45)]">
+          {item.title}
+        </h3>
+
+        {/* Description — Indigo/blue tint + larger + drop shadow */}
+        <p className="mt-3 text-base md:text-lg leading-relaxed text-indigo-100/95 filter drop-shadow-[0_1px_6px_rgba(0,0,0,0.45)]">
+          {item.desc}
+        </p>
+      </div>
+
+      {/* Bottom-right arrow chip */}
+      <div className="relative z-10 mt-6 flex justify-end">
+        <button
+          className={[
+            "inline-flex h-10 w-10 items-center justify-center rounded-full border text-sm transition",
+            "border-white/30 bg-white/15 text-white hover:border-white/50 backdrop-blur-[1px]",
+            "shadow-sm",
+          ].join(" ")}
+          aria-label="Open"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </article>
   );
 }

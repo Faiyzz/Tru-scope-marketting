@@ -1,238 +1,333 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Target,
-  Search,
-  UserRound,
-  Code2,
-  Zap,
-  Play,
-  PhoneCall,
-} from "lucide-react";
+import { ArrowRight, PhoneCall } from "lucide-react";
 import Link from "next/link";
-
-type ServiceCard = {
-  id: string;
-  title: string;
-  desc: string;
-  icon: React.ReactNode;
-};
+import React from "react";
 
 export default function Hero() {
-  // Cards data
-  const baseCards: ServiceCard[] = useMemo(
-    () => [
-      {
-        id: "paid-ads",
-        title: "Paid Ads",
-        desc: "Precision-targeted campaigns",
-        icon: <Target className="h-6 w-6" />,
-      },
-      {
-        id: "seo",
-        title: "SEO",
-        desc: "Organic growth that compounds",
-        icon: <Search className="h-6 w-6" />,
-      },
-      {
-        id: "smm",
-        title: "SMM",
-        desc: "Engagement that converts",
-        icon: <UserRound className="h-6 w-6" />,
-      },
-      {
-        id: "web-dev",
-        title: "Web Dev",
-        desc: "High-converting experiences",
-        icon: <Code2 className="h-6 w-6" />,
-      },
-    ],
-    []
-  );
-
-  // Animated rotation
-  const [cards, setCards] = useState<ServiceCard[]>(baseCards);
-  const [paused, setPaused] = useState(false);
-  const [mounted, setMounted] = useState(false);
-  const intervalRef = useRef<number | null>(null);
-
-  useEffect(() => setMounted(true), []);
-
-  useEffect(() => {
-    if (paused) return;
-    intervalRef.current = window.setInterval(() => {
-      setCards((prev) => {
-        const [first, ...rest] = prev;
-        return [...rest, first];
-      });
-    }, 2800);
-    return () => {
-      if (intervalRef.current) window.clearInterval(intervalRef.current);
-    };
-  }, [paused]);
+  const ease = [0.22, 1, 0.36, 1] as const;
 
   return (
-    <section className="relative isolate overflow-hidden">
-      {/* Radial background fill */}
-      <div
-        aria-hidden
-        className="
-          pointer-events-none absolute inset-0 -z-10
-          bg-[radial-gradient(65rem_65rem_at_15%_10%,rgba(99,102,241,0.28),transparent_60%),
-              radial-gradient(50rem_50rem_at_85%_75%,rgba(236,72,153,0.22),transparent_55%)]
-        "
-      />
-
-      {/* Make columns top-aligned so cards align with hero text */}
-      <div className="mx-auto grid max-w-7xl grid-cols-1 items-start gap-12 px-6 py-16 md:grid-cols-2 md:py-24 lg:gap-16 md:grid-rows-[auto]">
-        {/* Left: Copy */}
-        <motion.div
-          initial={{ opacity: 0, y: 18, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="relative"
-        >
-          <h1 className="mx-auto max-w-4xl px-0 text-4xl font-extrabold tracking-tight text-slate-900 md:text-6xl leading-tight font-[Poppins]">
-            Get{" "}
-            <span className="bg-gradient-to-r from-[#8B5CF6] via-[#6366F1] to-[#60A5FA] bg-clip-text text-transparent">
-              Booked Solid
-            </span>
-            <br />
-            With High-Performance
-            <br />
-            Marketing
-          </h1>
-
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-slate-600 md:text-xl">
-            Performance ads, conversion-ready pages, and SEO that compounds.
-          </p>
-
-          {/* CTAs */}
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <CTAButton
-              href="#book"
-              variant="primary"
-              icon={<PhoneCall className="h-4 w-4" />}
-            >
-              Book Free Strategy Call
-            </CTAButton>
-
-            <CTAButton
-              href="#resources"
-              variant="ghost"
-              icon={<Play className="h-4 w-4" />}
-            >
-              Get FREE Resources
-            </CTAButton>
+    <AnimatePresence mode="wait">
+      <motion.section
+        role="banner"
+        aria-label="Crafting stories that connect and inspire"
+        className="hero relative isolate overflow-hidden bg-white text-gray-900 pt-8 md:pt-12 lg:pt-14"
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0, transition: { duration: 0.65, ease } }}
+        exit={{ opacity: 0, y: -24, transition: { duration: 0.35, ease } }}
+      >
+        {/* BG 1: Curve */}
+        <div className="absolute inset-0 -z-50">
+          <div className="curve-pos absolute inset-0">
+            <Image
+              src="/images/curve.png"
+              alt="Decorative curved gradient background"
+              fill
+              priority
+              sizes="100vw"
+              className="object-cover md:object-contain"
+            />
           </div>
+        </div>
 
-          <div className="mt-6 flex items-center gap-3 text-sm text-slate-500">
-            <Zap className="h-4 w-4 text-indigo-500" />
-            <span>24-hour response time</span>
-          </div>
-        </motion.div>
+        {/* BG 2: soft washes */}
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-40">
+          <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_48%_40%,rgba(255,255,255,0.60),transparent_60%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(60%_55%_at_70%_55%,rgba(58,196,236,0.22),transparent_65%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_12%_12%,rgba(138,92,255,0.18),transparent_60%)]" />
+        </div>
 
-        {/* Right: 2×2 animated cards (kept white, colored gradient borders preserved) */}
-        <motion.div
-          initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="relative self-start"
+        {/* Blob – hidden on mobile */}
+        <div
+          aria-hidden
+          className="hidden sm:block blob-safe absolute bottom-8 md:bottom-12 -z-30 select-none"
         >
-          <div
-            onMouseEnter={() => setPaused(true)}
-            onMouseLeave={() => setPaused(false)}
-            className="grid grid-cols-2 gap-6"
-          >
-            <AnimatePresence initial={false}>
-              {cards.map((card) => (
-                <motion.div
-                  key={card.id}
-                  layout
-                  transition={{
-                    layout: { duration: 0.5, ease: [0.22, 1, 0.36, 1] },
-                  }}
-                  initial={{ opacity: 0, scale: 0.98, y: 8 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="group"
+          <Image
+            src="/images/blob.jpg"
+            alt=""
+            width={320}
+            height={320}
+            className="rounded-full opacity-95 w-44 h-44 lg:w-56 lg:h-56 object-cover ring-2 ring-white/60 shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+            priority
+          />
+        </div>
+
+        {/* CONTENT */}
+        <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 py-8 md:py-10 lg:py-12 items-center">
+            {/* LEFT */}
+            <header className="max-w-xl md:max-w-2xl mx-auto text-center md:text-left">
+              <h1 className="leading-[1.05] tracking-tight">
+                <span className="block text-4xl sm:text-5xl md:text-6xl font-extrabold text-black">
+                  Crafting{" "}
+                  <span className="text-shine bg-clip-text text-transparent">
+                    Stories
+                  </span>
+                </span>
+                <span className="mt-1 block text-base sm:text-lg md:text-xl text-gray-700">
+                  That
+                </span>
+                <span className="mt-1 block text-3xl sm:text-4xl md:text-5xl font-extrabold">
+                  <em className="not-italic text-black">Connect</em>{" "}
+                  <span className="text-shine bg-clip-text text-transparent">
+                    &nbsp;Inspire
+                  </span>
+                </span>
+              </h1>
+
+              <p className="mt-4 text-sm sm:text-base text-gray-600">
+                Turning ideas into impactful digital experiences
+              </p>
+
+              <p className="mt-6 text-[0.95rem] leading-6 text-gray-700 max-w-prose mx-auto md:mx-0">
+                We help brands and creators bring their vision to life through
+                captivating content, innovative storytelling, and designs that
+                leave a lasting impression.
+              </p>
+
+              {/* Buttons centered on mobile */}
+              <nav className="mt-6 flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-3">
+                <Link
+                  href="#book"
+                  aria-label="Book a free call"
+                  className="inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-2.5 text-sm font-semibold text-white bg-[#3ac4ec] hover:bg-[#2ea5c8] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3ac4ec]/40 transition"
                 >
-                  {/* Colored gradient border wrapper */}
-                  <div className="rounded-2xl bg-[linear-gradient(135deg,rgba(99,102,241,0.65),rgba(14,165,233,0.38))] p-[1.5px] transition group-hover:scale-[1.01]">
-                    <div
-                      className={[
-                        // CARD: pure white, no inner tint, no inner white border
-                        "relative h-full rounded-2xl bg-white p-6",
-                        // subtle depth + hover pop
-                        "shadow-[0_6px_22px_rgba(15,23,42,0.06)] transition",
-                        "hover:-translate-y-0.5 hover:shadow-[0_16px_46px_rgba(79,70,229,0.20)]",
-                        mounted ? "" : "animate-pulse",
-                      ].join(" ")}
-                    >
-                      {/* Icon bubble */}
-                      <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-white ring-1 ring-indigo-100 transition group-hover:ring-indigo-300">
-                        <span className="text-slate-700 group-hover:text-indigo-600">
-                          {card.icon}
-                        </span>
-                      </div>
+                  <PhoneCall className="size-4" />
+                  Book Free Call
+                </Link>
+                <Link
+                  href="#services"
+                  aria-label="Explore our services"
+                  className="inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-2.5 text-sm font-semibold text-gray-900 bg-white/90 backdrop-blur ring-1 ring-[#3ac4ec]/30 hover:bg-white transition"
+                >
+                  Explore Our Services
+                  <ArrowRight className="size-4" />
+                </Link>
+              </nav>
+            </header>
 
-                      <h3 className="text-xl font-bold text-slate-900">
-                        {card.title}
-                      </h3>
-                      <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                        {card.desc}
-                      </p>
+            {/* RIGHT */}
+            <figure aria-hidden className="w-full">
+              {/* MOBILE: simple centered row (no overlap) */}
+              <div className="md:hidden flex items-center justify-center gap-3 pt-4">
+                <div className="device-frame">
+                  <div className="device-m">
+                    <Image
+                      src="/images/web.jpg"
+                      alt="Editing interface"
+                      fill
+                      className="media"
+                    />
+                  </div>
+                </div>
+                <div className="device-frame">
+                  <div className="device-m">
+                    <Image
+                      src="/images/edit.jpg"
+                      alt="Studio monitors"
+                      fill
+                      className="media"
+                    />
+                  </div>
+                </div>
+                <div className="device-frame">
+                  <div className="device-m">
+                    <Image
+                      src="/images/seo.jpg"
+                      alt="Creator at work"
+                      fill
+                      className="media"
+                    />
+                  </div>
+                </div>
+              </div>
 
-                      {/* Focus ring on hover */}
-                      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-0 ring-indigo-400/0 transition group-hover:ring-2 group-hover:ring-indigo-400/30" />
-                    </div>
+              {/* DESKTOP/TABLET: overlapped stack */}
+              <div className="hidden md:block relative mx-auto h-[360px] lg:h-[440px]">
+                {/* left card */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12, rotate: -6, scale: 0.94 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    rotate: -8,
+                    scale: 1,
+                    transition: { duration: 0.7, ease, delay: 0.15 },
+                  }}
+                  className="absolute left-6 lg:left-10 top-2 rotate-[-8deg] device-frame float-soft z-10"
+                >
+                  <div className="device">
+                    <Image
+                      src="/images/web.jpg"
+                      alt="Editing interface"
+                      fill
+                      className="media"
+                      priority
+                    />
                   </div>
                 </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </motion.div>
-      </div>
-    </section>
-  );
-}
 
-/* ---------- Reusable CTA button ---------- */
-function CTAButton({
-  href,
-  children,
-  icon,
-  variant = "primary",
-}: {
-  href: string;
-  children: React.ReactNode;
-  icon?: React.ReactNode;
-  variant?: "primary" | "ghost";
-}) {
-  const base =
-    "inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm md:text-base font-semibold transition will-change-transform active:scale-95";
-  if (variant === "primary") {
-    return (
-      <Link
-        href={href}
-        className={`${base} bg-gradient-to-r from-blue-500 to-indigo-500 text-white shadow-[0_10px_30px_rgba(59,130,246,0.35)]
-        hover:from-indigo-500 hover:to-violet-500 hover:shadow-[0_18px_48px_rgba(99,102,241,0.45)]`}
-      >
-        <span className="shrink-0">{icon}</span>
-        {children}
-      </Link>
-    );
-  }
-  return (
-    <Link
-      href={href}
-      className={`${base} bg-white text-slate-900 ring-1 ring-slate-200 hover:bg-slate-50 hover:text-slate-950 shadow-[0_6px_20px_rgba(15,23,42,0.06)]
-      hover:shadow-[0_12px_32px_rgba(15,23,42,0.10)]`}
-    >
-      <span className="shrink-0">{icon}</span>
-      {children}
-    </Link>
+                {/* right card – pulled closer */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16, rotate: 6, scale: 0.94 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    rotate: 8,
+                    scale: 1,
+                    transition: { duration: 0.7, ease, delay: 0.25 },
+                  }}
+                  className="absolute right-6 lg:right-10 top-1 rotate-[8deg] device-frame float-soft z-10"
+                >
+                  <div className="device">
+                    <Image
+                      src="/images/edit.jpg"
+                      alt="Creator at work"
+                      fill
+                      className="media"
+                      priority
+                    />
+                  </div>
+                </motion.div>
+
+                {/* center card on top */}
+                <motion.div
+                  initial={{ opacity: 0, y: 16, scale: 0.93 }}
+                  animate={{
+                    opacity: 1,
+                    y: 0,
+                    scale: 1,
+                    transition: { duration: 0.7, ease, delay: 0.35 },
+                  }}
+                  className="absolute left-1/2 -translate-x-1/2 top-8 device-frame ring-2 ring-white/50 shadow-xl z-20"
+                >
+                  <div className="device">
+                    <Image
+                      src="/images/seo.jpg"
+                      alt="Studio monitors"
+                      fill
+                      className="media"
+                      priority
+                    />
+                  </div>
+                </motion.div>
+              </div>
+            </figure>
+          </div>
+        </div>
+
+        <style jsx global>{`
+          .text-shine {
+            background-image: linear-gradient(
+              100deg,
+              #8a5cff 10%,
+              #b18cff 30%,
+              #42e9a6 55%,
+              #8a5cff 80%
+            );
+            background-size: 200% auto;
+            animation: shine 2.6s linear infinite;
+          }
+          @keyframes shine {
+            to {
+              background-position: -200% center;
+            }
+          }
+
+          .float-soft {
+            animation: float 6s ease-in-out infinite;
+          }
+          @keyframes float {
+            0%,
+            100% {
+              transform: translateY(0) rotate(var(--tw-rotate));
+            }
+            50% {
+              transform: translateY(-10px) rotate(var(--tw-rotate));
+            }
+          }
+
+          .device-frame {
+            padding: 6px;
+            border-radius: 1.4rem;
+            background: linear-gradient(
+              135deg,
+              rgba(255, 255, 255, 0.85),
+              rgba(255, 255, 255, 0.25)
+            );
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25),
+              inset 0 1px 1px rgba(255, 255, 255, 0.35);
+            backdrop-filter: blur(3px);
+          }
+
+          /* desktop/tablet device */
+          .device {
+            --device-ar: 9 / 19;
+            position: relative;
+            width: clamp(120px, 11vw, 160px);
+            aspect-ratio: var(--device-ar);
+            border-radius: 1.1rem;
+            overflow: hidden;
+          }
+          /* mobile device (smaller) */
+          .device-m {
+            position: relative;
+            width: clamp(84px, 26vw, 110px);
+            aspect-ratio: 9 / 18;
+            border-radius: 1.1rem;
+            overflow: hidden;
+          }
+
+          .media {
+            object-fit: cover;
+            object-position: center;
+          }
+
+          /* Curve positioning */
+          .hero {
+            --curve-x: -2vw;
+            --curve-y: -1vh;
+            --curve-scale: 1;
+          }
+          .curve-pos {
+            transform: translate(var(--curve-x), var(--curve-y))
+              scale(var(--curve-scale));
+            transform-origin: center;
+          }
+          @media (min-width: 640px) {
+            .hero {
+              --curve-x: -3vw;
+              --curve-y: -1vh;
+            }
+          }
+          @media (min-width: 1024px) {
+            .hero {
+              --curve-x: 19vw;
+              --curve-y: -3vh;
+            }
+          }
+          @media (min-width: 1536px) {
+            .hero {
+              --curve-x: 19vw;
+              --curve-y: -3vh;
+            }
+          }
+
+          .blob-safe {
+            left: clamp(-64px, -6vw, -16px);
+          }
+
+          @media (prefers-reduced-motion: reduce) {
+            .text-shine,
+            .float-soft {
+              animation: none !important;
+            }
+          }
+        `}</style>
+      </motion.section>
+    </AnimatePresence>
   );
 }

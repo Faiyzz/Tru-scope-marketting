@@ -1,167 +1,298 @@
-// components/FaqSection.tsx
 "use client";
 
-import React, { useId, useState } from "react";
+import Image from "next/image";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 type FaqItem = { q: string; a: string };
 
-type Props = {
-  title?: string;
-  subtitle?: string;
-  items?: FaqItem[];
-  defaultOpen?: number[]; // indexes to open by default (e.g., [0])
-  accentClass?: string; // tailwind color class for accents (e.g., "text-purple-700")
-};
+const items: FaqItem[] = [
+  {
+    q: "How long until we deliver your first blog post?",
+    a: "Your first draft typically arrives within 3–5 business days after onboarding and topic approval.",
+  },
+  {
+    q: "Can we match your brand voice and style?",
+    a: "Yes. We build a simple style guide from your samples and follow it for all drafts.",
+  },
+  {
+    q: "Do you provide revisions?",
+    a: "Absolutely. Revisions are included to ensure each post fits your expectations.",
+  },
+  {
+    q: "Do you handle on-page SEO?",
+    a: "Yes—titles, meta, headings, internal links, and basic schema are included.",
+  },
+  {
+    q: "How do we get started?",
+    a: "Book a quick call, choose a plan, and we’ll kick off your content calendar.",
+  },
+];
 
-export default function FaqSection({
-  title = "Frequently Asked Questions",
-  subtitle = "Everything you need to know about working with us",
-  items,
-  defaultOpen = [0],
-  accentClass = "text-purple-700",
-}: Props) {
-  const DATA: FaqItem[] = items ?? [
-    {
-      q: "What's your minimum contract length?",
-      a: "We require a minimum of 3-months to properly implement and optimize our strategies. Most clients see the best results with 6–12 month engagements.",
-    },
-    {
-      q: "What's your onboarding timeline?",
-      a: "Our onboarding follows a structured 5-step process: Welcome (1–2 days), Access (3–5 days), Strategy (1–2 weeks), Setup (1 week), and Launch (1–2 weeks). Most clients are fully onboarded within 3–4 weeks.",
-    },
-    {
-      q: "Can you describe your creative process?",
-      a: "Our creative process begins with deep audience research, followed by concept development. We create initial drafts, submit for client review, incorporate feedback, and refine until we have high-performing creatives that resonate with your target audience.",
-    },
-    {
-      q: "How often will I receive reports?",
-      a: "We provide weekly, bi-weekly, or monthly reporting depending on client preference. All reports include clear KPIs, insights, and actionable recommendations to continually improve performance.",
-    },
-    {
-      q: "What's your minimum ad spend requirement?",
-      a: "We recommend a minimum ad spend of $500 to achieve meaningful results. Optimal budgets vary by industry and goals, which we'll determine during your strategy session.",
-    },
-    {
-      q: "Do you work with specific industries?",
-      a: "We provide marketing solutions for every industry. Our team has particular expertise in professional services, e-commerce, healthcare, and SaaS, but our methodologies apply universally to any business looking to grow.",
-    },
-  ];
+const cx = (...c: Array<string | false | undefined>) =>
+  c.filter(Boolean).join(" ");
 
-  // Track open rows (multiple can be open)
-  const [open, setOpen] = useState<Set<number>>(new Set(defaultOpen));
-  const toggle = (i: number) =>
-    setOpen((prev) => {
-      const next = new Set(prev);
-      next.has(i) ? next.delete(i) : next.add(i);
-      return next;
-    });
+export default function FAQSection() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [quickMsg, setQuickMsg] = useState("");
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   return (
-    <section className="w-full bg-slate-50">
-      <div className="mx-auto max-w-5xl px-6 py-16 md:py-20">
-        <header className="text-center">
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-            {title}
-          </h2>
-          <p className="mt-3 text-slate-600 md:text-lg">{subtitle}</p>
-        </header>
-
-        <div className="mt-10 md:mt-14">
-          {DATA.map((item, i) => (
-            <FaqRow
-              key={i}
-              i={i}
-              q={item.q}
-              a={item.a}
-              open={open.has(i)}
-              onToggle={() => toggle(i)}
-              accentClass={accentClass}
-            />
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ---------------- Row ---------------- */
-
-function FaqRow({
-  i,
-  q,
-  a,
-  open,
-  onToggle,
-  accentClass,
-}: {
-  i: number;
-  q: string;
-  a: string;
-  open: boolean;
-  onToggle: () => void;
-  accentClass: string;
-}) {
-  const baseId = useId();
-  const contentId = `${baseId}-content`;
-
-  return (
-    <div className="py-6">
-      <button
-        type="button"
-        aria-expanded={open}
-        aria-controls={contentId}
-        onClick={onToggle}
-        className="group flex w-full items-start justify-between gap-6 text-left focus:outline-none"
-      >
-        <h3 className={`text-base font-semibold md:text-lg ${accentClass}`}>
-          {q}
-        </h3>
-
-        {/* Arrow */}
-        <ChevronIcon
-          className={`h-5 w-5 shrink-0 text-purple-600 transition-transform duration-300 ${
-            open ? "rotate-180" : "rotate-0"
-          }`}
-        />
-      </button>
-
-      {/* Answer with smooth expand/collapse */}
-      <div
-        id={contentId}
-        className={`grid transition-[grid-template-rows,opacity,margin] duration-300 ease-out ${
-          open
-            ? "grid-rows-[1fr] opacity-100 mt-3"
-            : "grid-rows-[0fr] opacity-0 mt-0"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <p className="text-slate-700 leading-relaxed">{a}</p>
-        </div>
-      </div>
-
-      {/* Purple divider like screenshot */}
-      <div className="mt-6 h-px bg-purple-300/70" />
-    </div>
-  );
-}
-
-/* ---------------- Icons ---------------- */
-
-function ChevronIcon({ className = "" }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      className={className}
-      fill="none"
-      aria-hidden="true"
+    <motion.section
+      className={cx(
+        "relative bg-white overflow-hidden", // ⬅️ clip decorative effects to prevent scrollbars
+        "isolate" // ensure z-index context for the glow
+      )}
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.2 }}
+      transition={{ type: "spring", stiffness: 120, damping: 20 }}
     >
-      <path
-        d="M6 9l6 6 6-6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      {/* soft glow (clipped by section) */}
+      <div
+        aria-hidden
+        className={cx(
+          "pointer-events-none absolute -top-40 right-0 sm:-right-10 h-[32rem] w-[32rem] rounded-full blur-3xl -z-10",
+          "opacity-90"
+        )}
+        style={{
+          background:
+            "radial-gradient(50% 50% at 50% 50%, rgba(168,85,247,0.18) 0%, rgba(255,255,255,0) 60%)",
+          maskImage:
+            "radial-gradient(closest-side, rgba(0,0,0,1), rgba(0,0,0,0.15))", // softer edge
+          WebkitMaskImage:
+            "radial-gradient(closest-side, rgba(0,0,0,1), rgba(0,0,0,0.15))",
+        }}
       />
-    </svg>
+
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 md:py-24">
+        {/* Heading */}
+        <motion.header
+          className="mb-10 md:mb-14"
+          initial={{ opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ delay: 0.05 }}
+        >
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-gray-900">
+            Frequently Asked <span className="text-purple-600">Questions</span>
+          </h2>
+          <p className="mt-3 text-gray-500 italic text-pretty">
+            Everything you need to know about working with us
+          </p>
+        </motion.header>
+
+        {/* Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-10 lg:gap-16 items-start">
+          {/* Left: Accordion */}
+          <motion.ol
+            className="space-y-5 min-w-0" // ⬅️ avoid contents forcing width
+            initial="hidden"
+            whileInView="show"
+            viewport={{ once: true, amount: 0.25 }}
+            variants={{
+              hidden: {},
+              show: { transition: { staggerChildren: 0.08 } },
+            }}
+          >
+            {items.map((item, idx) => {
+              const isOpen = openIndex === idx;
+              const contentId = `faq-content-${idx}`;
+              return (
+                <motion.li
+                  key={idx}
+                  variants={{
+                    hidden: { opacity: 0, y: 16 },
+                    show: { opacity: 1, y: 0 },
+                  }}
+                >
+                  <motion.div
+                    className={cx(
+                      "group rounded-xl border border-black/5 bg-white p-4 sm:p-5 w-full",
+                      "shadow-[0_20px_40px_-28px_rgba(0,0,0,0.35)]",
+                      "transition-shadow",
+                      "hover:shadow-[0_28px_56px_-28px_rgba(0,0,0,0.4)]"
+                    )}
+                    whileHover={{ y: -2 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 22 }}
+                  >
+                    <motion.button
+                      type="button"
+                      onClick={() => setOpenIndex(isOpen ? null : idx)}
+                      aria-expanded={isOpen}
+                      aria-controls={contentId}
+                      className="flex w-full items-start gap-3 text-left"
+                      whileTap={{ scale: 0.985 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 24,
+                      }}
+                    >
+                      {/* Plus / minus with rotation */}
+                      <motion.span
+                        className="relative grid size-7 shrink-0 place-items-center rounded-full border border-black/10 text-gray-700"
+                        animate={{ rotate: isOpen ? 90 : 0 }}
+                        transition={{
+                          type: "spring",
+                          stiffness: 250,
+                          damping: 18,
+                        }}
+                        aria-hidden
+                      >
+                        <span className="absolute h-0.5 w-3.5 bg-current" />
+                        <motion.span
+                          className="absolute w-0.5 h-3.5 bg-current"
+                          animate={{ scaleY: isOpen ? 0 : 1 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 260,
+                            damping: 18,
+                          }}
+                        />
+                      </motion.span>
+
+                      <span className="flex-1 min-w-0 text-sm sm:text-base font-medium text-gray-800 leading-snug text-pretty break-words">
+                        {item.q}
+                      </span>
+                    </motion.button>
+
+                    {/* Animated answer */}
+                    <AnimatePresence initial={false}>
+                      {isOpen && (
+                        <motion.div
+                          id={contentId}
+                          key="content"
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.28, ease: "easeOut" }}
+                          className="overflow-hidden"
+                        >
+                          <motion.p
+                            className="mt-3 pl-10 text-sm text-gray-600 text-pretty break-words"
+                            initial={{ y: -6, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ delay: 0.05, duration: 0.2 }}
+                          >
+                            {item.a}
+                          </motion.p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
+                </motion.li>
+              );
+            })}
+          </motion.ol>
+
+          {/* Right: Illustration + tiny form */}
+          <div className="mx-auto w-full max-w-md md:max-w-none min-w-0">
+            {/* Image container with skeleton + load-in */}
+            <motion.div
+              className="mx-auto mb-8 md:mb-10 max-w-full"
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.05 }}
+            >
+              <div className="relative mx-auto aspect-square w-40 sm:w-52 md:w-60 lg:w-64 max-w-full">
+                {/* Skeleton shimmer until image loads */}
+                <AnimatePresence>
+                  {!imgLoaded && (
+                    <motion.div
+                      key="skeleton"
+                      className="absolute inset-0 rounded-xl overflow-hidden"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                    >
+                      <div className="h-full w-full bg-gray-100">
+                        <div className="h-full w-full animate-pulse bg-gradient-to-r from-gray-100 via-gray-200 to-gray-100" />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <motion.div
+                  initial={{ scale: 0.98, opacity: 0 }}
+                  animate={imgLoaded ? { scale: 1, opacity: 1 } : {}}
+                  transition={{ type: "spring", stiffness: 220, damping: 20 }}
+                  className="absolute inset-0"
+                >
+                  <Image
+                    src="/images/ask.png" // replace with your path
+                    alt="FAQ illustration"
+                    fill
+                    className="object-contain select-none"
+                    priority
+                    onLoadingComplete={() => setImgLoaded(true)}
+                  />
+                </motion.div>
+              </div>
+            </motion.div>
+
+            <motion.div
+              className="rounded-2xl border border-black/5 bg-white p-6 shadow-[0_12px_30px_-20px_rgba(0,0,0,0.35)]"
+              whileHover={{
+                y: -2,
+                boxShadow: "0 20px 50px -20px rgba(0,0,0,0.35)",
+              }}
+              transition={{ type: "spring", stiffness: 300, damping: 22 }}
+            >
+              <h3 className="text-xl font-bold text-gray-900">Any Question?</h3>
+              <p className="mt-1 text-xs text-gray-500 text-pretty">
+                You can ask anything you want to know. Feedback welcome.
+              </p>
+
+              <label
+                htmlFor="quick-question"
+                className="mt-5 block text-xs font-medium text-gray-700"
+              >
+                Let me know
+              </label>
+
+              <div className="relative mt-2">
+                <motion.input
+                  id="quick-question"
+                  value={quickMsg}
+                  onChange={(e) => setQuickMsg(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") setQuickMsg("");
+                  }}
+                  placeholder="Enter here"
+                  className={cx(
+                    "w-full rounded-lg border border-black/10 bg-white px-3 py-2 pr-9 text-sm",
+                    "placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-200",
+                    "min-w-0" // ⬅️ prevents input from expanding beyond container
+                  )}
+                  whileFocus={{ boxShadow: "0 0 0 3px rgba(168,85,247,0.20)" }}
+                />
+                {!!quickMsg && (
+                  <motion.button
+                    type="button"
+                    aria-label="Clear"
+                    onClick={() => setQuickMsg("")}
+                    className="absolute right-2 top-1/2 -translate-y-1/2 grid size-6 place-items-center rounded-md text-gray-400 hover:text-gray-600"
+                    whileTap={{ scale: 0.9 }}
+                    whileHover={{ scale: 1.05 }}
+                  >
+                    <svg
+                      viewBox="0 0 24 24"
+                      className="size-4"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M18 6 6 18M6 6l12 12" />
+                    </svg>
+                  </motion.button>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </motion.section>
   );
 }

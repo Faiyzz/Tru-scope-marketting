@@ -2,6 +2,19 @@
 "use client";
 
 import React from "react";
+import {
+  motion,
+  useScroll,
+  useTransform,
+  useInView,
+  type Variants,
+} from "framer-motion";
+
+/* ---------------- Theme ---------------- */
+const ACCENT = "#3ac4ec";
+const ACCENT_DARK = "#1f9fc0";
+const GRAD_FROM = "rgba(58,196,236,0.22)";
+const GRAD_TO = "rgba(99,102,241,0.18)";
 
 /* ---------------- Types ---------------- */
 type Step = { id: number; title: string; blurb: string };
@@ -17,7 +30,6 @@ type Props = {
   initialLoadingMs?: number; // skeleton duration (ms)
 };
 
-/* ---------------- Component ---------------- */
 export default function PredictableGrowthSection({
   title = "Our Process to Predictable Growth",
   subtitle = "A proven methodology that delivers consistent, measurable results for your business.",
@@ -25,7 +37,7 @@ export default function PredictableGrowthSection({
   metrics,
   advantages,
   onCtaClick,
-  initialLoadingMs = 900,
+  initialLoadingMs = 500,
 }: Props) {
   const STEPS: Step[] = steps ?? [
     {
@@ -53,8 +65,8 @@ export default function PredictableGrowthSection({
 
   const METRICS: Metric[] = metrics ?? [
     { id: "roi", value: 4, label: "Average ROI" },
-    { id: "leads", value: 67, label: "Leads/Month" },
-    { id: "bookings", value: 45, label: "Bookings/Month" },
+    { id: "leads", value: 67, label: "Leads / Month" },
+    { id: "bookings", value: 45, label: "Bookings / Month" },
     { id: "retention", value: 98, label: "Client Retention" },
   ];
 
@@ -75,177 +87,354 @@ export default function PredictableGrowthSection({
     return () => clearTimeout(t);
   }, [initialLoadingMs]);
 
-  /* ---- in-view to trigger entrances + counters ---- */
-  const rootRef = React.useRef<HTMLElement | null>(null);
-  const [inView, setInView] = React.useState(false);
-  React.useEffect(() => {
-    if (!rootRef.current) return;
-    const io = new IntersectionObserver(
-      (entries) => entries.forEach((e) => e.isIntersecting && setInView(true)),
-      { threshold: 0.2, rootMargin: "0px 0px -15% 0px" }
-    );
-    io.observe(rootRef.current);
-    return () => io.disconnect();
-  }, []);
+  // Stable skeleton arrays
+  const SKELETON_STEPS = React.useMemo(
+    () => Array.from({ length: 5 }, (_, i) => i),
+    []
+  );
+  const SKELETON_METRICS = React.useMemo(
+    () => Array.from({ length: 4 }, (_, i) => i),
+    []
+  );
+  const SKELETON_ADV = React.useMemo(
+    () => Array.from({ length: 4 }, (_, i) => i),
+    []
+  );
+
+  /* ---- scroll progress + in-view ---- */
+  const sectionRef = React.useRef<HTMLElement | null>(null);
+  const listRef = React.useRef<HTMLDivElement | null>(null);
+  const metricsRef = React.useRef<HTMLDivElement | null>(null);
+
+  const { scrollYProgress } = useScroll({
+    target: listRef,
+    offset: ["start 0.8", "end 0.2"],
+  });
+
+  const fillY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  const metricsInView = useInView(metricsRef, {
+    once: true,
+    margin: "0px 0px -20% 0px",
+  });
+
+  /* ---- animations ---- */
+  const container: Variants = {
+    hidden: {},
+    show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
+  };
+  const item: Variants = {
+    hidden: { opacity: 0, y: 14 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  };
 
   return (
-    <section ref={rootRef} className="relative w-full bg-white">
-      <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:px-8">
+    <section
+      ref={sectionRef as React.RefObject<HTMLElement>}
+      className="relative isolate w-full max-w-[100vw] overflow-hidden bg-white"
+    >
+      {/* CLIPPED decorations wrapper (prevents horizontal scroll from blurs/transforms) */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 overflow-hidden"
+        style={{ contain: "paint" }}
+      >
+        <motion.div
+          className="absolute -top-24 -left-24 h-[26rem] w-[26rem] rounded-full blur-3xl"
+          style={{
+            background: `radial-gradient(60% 60% at 50% 50%, ${GRAD_FROM} 0%, ${GRAD_TO} 40%, transparent 70%)`,
+            opacity: 0.7,
+          }}
+        />
+        <motion.div
+          className="absolute -bottom-20 -right-20 h-[24rem] w-[24rem] rounded-full blur-3xl"
+          style={{
+            background:
+              "radial-gradient(60% 60% at 50% 50%, rgba(34,197,94,0.12) 0%, rgba(99,102,241,0.1) 40%, transparent 70%)",
+            opacity: 0.55,
+          }}
+        />
+      </div>
+
+      <div className="relative mx-auto max-w-6xl px-6 py-14 md:py-16 lg:px-8">
         {/* Heading */}
-        <header
-          className={`max-w-3xl ${
-            inView ? "animate-rise-in" : "opacity-0 translate-y-4"
-          }`}
+        <motion.header
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          className="max-w-3xl"
         >
-          <h2 className="text-3xl font-extrabold leading-tight text-slate-900 md:text-5xl">
+          <motion.div
+            variants={item}
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs"
+          >
+            <span
+              className="inline-block h-2.5 w-2.5 rounded-full shadow-[0_0_0_4px_rgba(58,196,236,0.15)]"
+              style={{ backgroundColor: ACCENT }}
+            />
+            <span className="font-medium text-slate-600">
+              Predictable Growth Playbook
+            </span>
+          </motion.div>
+
+          <motion.h2
+            variants={item}
+            className="mt-3 bg-[linear-gradient(180deg,#0f172a_0%,#334155_100%)] bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl"
+          >
             {title}
-          </h2>
-          <p className="mt-4 text-base leading-relaxed text-slate-600 md:text-lg">
+          </motion.h2>
+
+          <motion.p
+            variants={item}
+            className="mt-3 text-base leading-relaxed text-slate-600 md:text-lg"
+          >
             {subtitle}
-          </p>
-        </header>
+          </motion.p>
+        </motion.header>
 
-        <div className="mt-10 grid grid-cols-1 gap-8 md:mt-14 md:grid-cols-12">
-          {/* LEFT: Steps + CTA */}
-          <div className="md:col-span-6">
-            <ol className="space-y-6">
-              {loading
-                ? Array.from({ length: 5 }).map((_, i) => (
-                    <li
-                      key={`step-skel-${i}`}
-                      className="flex items-start gap-4 rounded-xl p-2 animate-fade-in"
-                      style={{ animationDelay: `${150 + i * 80}ms` }}
-                    >
-                      <div className="grid h-8 w-8 place-items-center rounded-full bg-slate-200" />
-                      <div className="flex-1 space-y-2">
-                        <div className="skeleton h-4 w-36 rounded" />
-                        <div className="skeleton h-4 w-64 rounded" />
-                      </div>
-                    </li>
-                  ))
-                : STEPS.map((item, i) => (
-                    <li
-                      key={`step-${item.id}-${item.title}`}
-                      className="flex items-start gap-4 rounded-xl p-2 animate-fade-in"
-                      style={{ animationDelay: `${150 + i * 80}ms` }}
-                    >
-                      <div className="grid h-8 w-8 place-items-center rounded-full bg-gradient-to-br from-blue-500 to-indigo-500 text-white shadow-[0_6px_20px_-6px_rgba(59,130,246,0.5)]">
-                        <span className="text-sm font-bold">{item.id}</span>
-                      </div>
-                      <div className="flex-1">
-                        <h3 className="text-base font-semibold text-slate-900 md:text-lg">
-                          {item.title}
-                        </h3>
-                        <p className="mt-1 text-slate-600">{item.blurb}</p>
-                      </div>
-                    </li>
-                  ))}
-            </ol>
-
-            {/* CTA */}
-            <div
-              className={`${
-                inView ? "animate-fade-in" : "opacity-0"
-              } mt-8 md:mt-10`}
-              style={{ animationDelay: "650ms" }}
-            >
-              <button
-                onClick={onCtaClick}
-                className="group relative inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-600 to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-indigo-500/30 transition-all hover:scale-[1.02] hover:shadow-xl active:scale-[0.99] focus:outline-none"
-              >
-                <span className="absolute inset-0 overflow-hidden rounded-full">
-                  <span className="button-shine" />
-                </span>
-                <span className="relative">Start My Strategy</span>
-                <svg
-                  className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <path
-                    d="M7 5l5 5-5 5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          {/* RIGHT: Metrics + Advantages */}
-          <div className="md:col-span-6">
-            {/* Metrics grid */}
-            <div
-              className={`grid grid-cols-2 gap-4 sm:gap-6 ${
-                inView ? "animate-fade-in" : "opacity-0"
-              }`}
-              style={{ animationDelay: "180ms" }}
-            >
-              {loading
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={`metric-skel-${i}`}
-                      className="rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-sm animate-card-pop"
-                      style={{ animationDelay: `${180 + i * 80}ms` }}
-                    >
-                      <div className="skeleton mb-3 h-10 w-16 rounded" />
-                      <div className="skeleton h-4 w-28 rounded" />
+        {/* Metrics band */}
+        <motion.div
+          ref={metricsRef}
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.35 }}
+          className="mt-8 overflow-hidden rounded-2xl border border-[rgba(58,196,236,0.2)] bg-[linear-gradient(135deg,rgba(58,196,236,0.10),rgba(31,159,192,0.08))] p-4 sm:p-5"
+        >
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {loading
+              ? SKELETON_METRICS.map((i) => (
+                  <motion.div
+                    key={`metric-skel-${i}`}
+                    variants={item}
+                    className="space-y-1"
+                  >
+                    {shimmerBlock(40, 20)}
+                    <div className="text-xs font-medium text-slate-700 sm:text-sm">
+                      {shimmerLine(60, 100)}
                     </div>
-                  ))
-                : METRICS.map((m, i) => (
-                    <div
-                      key={`metric-${m.id}`}
-                      className="rounded-2xl border border-slate-200 bg-white/70 p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md animate-card-pop"
-                      style={{ animationDelay: `${180 + i * 80}ms` }}
-                    >
-                      <div className="text-4xl font-extrabold tracking-tight text-blue-500 md:text-5xl">
+                  </motion.div>
+                ))
+              : METRICS.map((m, i) => (
+                  <motion.div
+                    key={`metric-${m.id}`}
+                    variants={item}
+                    className="space-y-1"
+                  >
+                    <div className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
+                      <span className="tabular-nums">
                         <CountUp
                           end={m.value}
                           duration={900 + i * 120}
-                          play={inView && !loading}
+                          play={metricsInView && !loading}
                         />
-                      </div>
-                      <div className="mt-2 text-sm text-slate-600">
-                        {m.label}
-                      </div>
+                        <MetricSuffix id={m.id} />
+                      </span>
                     </div>
-                  ))}
-            </div>
+                    <div className="text-xs font-medium text-slate-700 sm:text-sm">
+                      {m.label}
+                    </div>
+                  </motion.div>
+                ))}
+          </div>
+        </motion.div>
 
-            {/* Advantage card */}
+        {/* Process + Benefits */}
+        <div className="mt-10 grid grid-cols-1 gap-8 md:mt-12 md:grid-cols-12">
+          {/* LEFT: Steps with progress rail */}
+          <div className="md:col-span-7">
             <div
-              className={`mt-4 rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-sm sm:mt-6 ${
-                inView ? "animate-card-pop" : "opacity-0 translate-y-3"
-              }`}
-              style={{ animationDelay: "260ms" }}
+              ref={listRef}
+              className="relative overflow-hidden md:overflow-visible"
             >
-              <p className="text-base font-semibold text-slate-900">
-                Your Advantage
-              </p>
-              <ul className="mt-4 space-y-3">
+              {/* Rail (kept inside container to avoid overflow) */}
+              <div className="absolute left-5 top-0 hidden h-full w-px -translate-x-1/2 bg-slate-200 md:block" />
+              <motion.div
+                className="absolute left-5 top-0 hidden w-[3px] -translate-x-1/2 rounded md:block"
+                style={{
+                  height: fillY,
+                  background: ACCENT,
+                  boxShadow: `0 0 18px ${ACCENT}66`,
+                }}
+              />
+              <ol className="space-y-4">
                 {loading
-                  ? Array.from({ length: 4 }).map((_, i) => (
-                      <li
-                        key={`adv-skel-${i}`}
-                        className="flex items-start gap-3 animate-fade-in"
-                        style={{ animationDelay: `${i * 70}ms` }}
+                  ? SKELETON_STEPS.map((i) => (
+                      <motion.li
+                        key={`step-skel-${i}`}
+                        variants={item}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.35 }}
+                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:pl-16"
                       >
-                        <div className="skeleton h-4 w-56 rounded" />
-                      </li>
+                        {/* Dot */}
+                        <div className="pointer-events-none absolute left-5 top-5 hidden -translate-x-1/2 md:block">
+                          <div
+                            className="grid h-9 w-9 place-items-center rounded-full shadow-md"
+                            style={{
+                              background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
+                              boxShadow: `0 20px 40px -15px ${ACCENT}66`,
+                            }}
+                          >
+                            <span className="text-sm font-bold text-white">
+                              {i + 1}
+                            </span>
+                          </div>
+                        </div>
+                        <h3 className="text-base font-semibold text-slate-900 md:text-lg">
+                          {shimmerLine(90, 140)}
+                        </h3>
+                        <p className="mt-1 text-sm text-slate-600">
+                          {shimmerLine(160, 220)}
+                        </p>
+                      </motion.li>
                     ))
-                  : ADV.map((text, i) => (
-                      <li
-                        key={`adv-${i}-${text}`}
-                        className="flex items-start gap-3 animate-fade-in"
-                        style={{ animationDelay: `${i * 70}ms` }}
+                  : STEPS.map((s) => (
+                      <motion.li
+                        key={`step-${s.id}`}
+                        variants={item}
+                        initial="hidden"
+                        whileInView="show"
+                        viewport={{ once: true, amount: 0.35 }}
+                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-16"
                       >
-                        <CheckIcon />
-                        <span className="text-slate-700">{text}</span>
-                      </li>
+                        {/* Step dot */}
+                        <div className="pointer-events-none absolute left-5 top-5 hidden -translate-x-1/2 md:block">
+                          <div
+                            className="grid h-9 w-9 place-items-center rounded-full shadow-md"
+                            style={{
+                              background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
+                              boxShadow: `0 20px 40px -15px ${ACCENT}66`,
+                            }}
+                          >
+                            <span className="text-sm font-bold text-white">
+                              {s.id}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="ml-0 md:ml-2">
+                          <h3 className="text-base font-semibold text-slate-900 md:text-lg">
+                            {s.title}
+                          </h3>
+                          <p className="mt-1 text-sm text-slate-600">
+                            {s.blurb}
+                          </p>
+                        </div>
+                      </motion.li>
                     ))}
-              </ul>
+              </ol>
+
+              {/* CTA */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
+                className="mt-7 md:mt-9"
+              >
+                <button
+                  onClick={onCtaClick}
+                  className="group relative inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all focus:outline-none active:scale-[0.99]"
+                  style={{
+                    background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
+                    boxShadow: `0 18px 40px -15px ${ACCENT}7a`,
+                  }}
+                >
+                  <motion.span
+                    aria-hidden
+                    className="pointer-events-none absolute inset-0 rounded-xl"
+                    initial={{ x: "-120%" }}
+                    whileHover={{ x: "120%" }}
+                    transition={{ duration: 0.9, ease: "easeInOut" }}
+                    style={{
+                      background:
+                        "linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)",
+                    }}
+                  />
+                  <span className="relative">Start My Strategy</span>
+                  <svg
+                    className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                    viewBox="0 0 20 20"
+                    fill="none"
+                  >
+                    <path
+                      d="M7 5l5 5-5 5"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </button>
+              </motion.div>
+            </div>
+          </div>
+
+          {/* RIGHT: Sticky benefits + CTA */}
+          <div className="md:col-span-5">
+            <div className="md:sticky md:top-20">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
+                className="rounded-2xl border border-[rgba(58,196,236,0.25)] bg-white/90 p-6 shadow-[0_18px_40px_-15px_rgba(0,0,0,0.25)] backdrop-blur-md"
+              >
+                <p className="text-base font-semibold text-slate-900">
+                  Your Advantage
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {loading
+                    ? SKELETON_ADV.map((i) => (
+                        <li key={`adv-skel-${i}`}>{shimmerLine(140, 220)}</li>
+                      ))
+                    : ADV.map((text, i) => (
+                        <li key={`adv-${i}`} className="flex items-start gap-3">
+                          <CheckIcon />
+                          <span className="text-slate-700">{text}</span>
+                        </li>
+                      ))}
+                </ul>
+
+                <div className="mt-6">
+                  <button
+                    onClick={onCtaClick}
+                    className="group relative inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-all focus:outline-none active:scale-[0.99]"
+                    style={{
+                      background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
+                      boxShadow: `0 16px 36px -14px ${ACCENT}7a`,
+                    }}
+                  >
+                    <motion.span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 rounded-xl"
+                      initial={{ x: "-120%" }}
+                      whileHover={{ x: "120%" }}
+                      transition={{ duration: 0.9, ease: "easeInOut" }}
+                      style={{
+                        background:
+                          "linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)",
+                      }}
+                    />
+                    <span className="relative">Start My Strategy</span>
+                    <svg
+                      className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                      viewBox="0 0 20 20"
+                      fill="none"
+                    >
+                      <path
+                        d="M7 5l5 5-5 5"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </motion.div>
             </div>
           </div>
         </div>
@@ -254,12 +443,12 @@ export default function PredictableGrowthSection({
   );
 }
 
-/* ---------------- Helpers ---------------- */
+/* ---------------- Bits ---------------- */
 
 function CheckIcon() {
   return (
     <svg
-      className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
+      className="mt-0.5 h-5 w-5 shrink-0"
       viewBox="0 0 20 20"
       fill="currentColor"
       aria-hidden="true"
@@ -271,6 +460,14 @@ function CheckIcon() {
       />
     </svg>
   );
+}
+
+/** Small suffixes for certain metric IDs */
+function MetricSuffix({ id }: { id: string }) {
+  if (id === "roi") return <span className="ml-0.5 text-slate-900">×</span>;
+  if (id === "retention")
+    return <span className="ml-0.5 text-slate-900">%</span>;
+  return null;
 }
 
 /** Count-up that only plays when `play` is true */
@@ -305,4 +502,23 @@ function CountUp({
   }, [end, duration, play]);
 
   return <span>{val}</span>;
+}
+
+/* ---------------- Shimmer placeholders ---------------- */
+function shimmerLine(minW = 60, maxW = 120) {
+  const w = Math.floor(Math.random() * (maxW - minW + 1)) + minW;
+  return (
+    <span
+      className="inline-block h-3 animate-pulse rounded bg-slate-200/80"
+      style={{ width: `${w}px` }}
+    />
+  );
+}
+function shimmerBlock(w = 50, h = 18) {
+  return (
+    <span
+      className="inline-block animate-pulse rounded bg-slate-200/80"
+      style={{ width: w, height: h }}
+    />
+  );
 }

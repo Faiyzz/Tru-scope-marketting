@@ -2,24 +2,26 @@
 
 import FaqSection from "./components/Faq";
 import Hero from "./components/Hero";
-import LeadInquirySection from "./components/Inquiry";
+import ReservationSection from "./components/Inquiry";
 import PredictableGrowthSection from "./components/OurProcesses";
-import ResultsCarousel from "./components/Results";
-import ServicesSection from "./components/Services";
+import CallTeamSection from "./components/ProgressSpine";
+import ServicesVSLSection from "./components/ServicesVSL";
 import StatsSection from "./components/State";
 import TestimonialsSection from "./components/Testimonilas";
+import TalentServicesSection from "./components/Services";
+import WhyUsSection from "./components/Whyus";
 
 export default function Page() {
   return (
     <>
       <Hero />
       <StatsSection />
-      <ServicesSection />
-      <ResultsCarousel />
-      <PredictableGrowthSection />
+      <ServicesVSLSection />
+      <CallTeamSection />
       <TestimonialsSection />
       <FaqSection />
-      <LeadInquirySection />
+      <ReservationSection />
+      <PredictableGrowthSection />
     </>
   );
 }

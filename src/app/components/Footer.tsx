@@ -1,186 +1,270 @@
-// components/Footer.tsx
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import { useState, FormEvent } from "react";
+import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
-type LinkItem = { label: string; href: string };
-
-const QUICK_LINKS: LinkItem[] = [
-  { label: "Services", href: "#services" },
-  { label: "Results", href: "#results" },
-  { label: "Testimonials", href: "#testimonials" },
-  { label: "Contact", href: "#contact" },
-];
-
-const SERVICES: LinkItem[] = [
-  { label: "Paid Traffic", href: "#services" },
-  { label: "SEO", href: "#services" },
-  { label: "Social Media Marketing", href: "#services" },
-  { label: "Web Development", href: "#services" },
-];
-
+/**
+ * Animated Footer
+ * - Subtle aurora background
+ * - Staggered fade/slide-in on scroll
+ * - Shimmering divider
+ * - Newsletter button loading + success toast
+ */
 export default function Footer() {
-  const year = new Date().getFullYear();
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
+
+  const onSubscribe = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (!email) return;
+    setStatus("loading");
+    try {
+      // TODO: replace with your API call (e.g., fetch("/api/subscribe", {...}))
+      await new Promise((r) => setTimeout(r, 1000)); // demo latency
+      console.log("Subscribe:", email);
+      setEmail("");
+      setStatus("success");
+      setTimeout(() => setStatus("idle"), 3000);
+    } catch {
+      setStatus("error");
+      setTimeout(() => setStatus("idle"), 3000);
+    }
+  };
+
+  // Animation presets
+  const container = {
+    hidden: {},
+    show: {
+      transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+    },
+  };
+  const item = {
+    hidden: { opacity: 0, y: 14 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+  };
+  const shimmer = {
+    initial: { x: "-100%" },
+    animate: {
+      x: "100%",
+      transition: { duration: 2.4, ease: "linear", repeat: Infinity },
+    },
+  };
+
+  const serviceLinks = [
+    "Illustration",
+    "Mobile Design",
+    "Motion Graphic",
+    "Web Design",
+    "Development",
+    "SEO",
+  ];
+  const companyLinks = [
+    "Service",
+    "Features",
+    "Our Team",
+    "Portfolio",
+    "Blog",
+    "Contact Us",
+  ];
 
   return (
-    <footer className="mt-24 bg-[#0f1724] text-slate-200">
-      {/* container = slight white space on sides */}
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        {/* Top grid */}
-        <div className="grid grid-cols-1 gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
-          {/* Brand + blurb */}
-          <div>
-            <div className="text-2xl font-semibold leading-none">
-              <span className="bg-gradient-to-r from-blue-500 to-violet-500 bg-clip-text text-transparent">
-                TruScope
-              </span>
-            </div>
-            <p className="mt-4 max-w-xs text-slate-300/90">
-              Driving measurable growth with data-driven marketing strategies.
+    <footer className="relative overflow-hidden bg-[#0F1527] text-slate-300">
+      {/* Aurora background blobs */}
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -top-32 -left-40 h-[36rem] w-[36rem] rounded-full blur-3xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.1, ease: "easeOut" }}
+        style={{
+          background:
+            "radial-gradient(60% 60% at 50% 50%, rgba(56,189,248,0.10) 0%, rgba(99,102,241,0.10) 35%, transparent 65%)",
+        }}
+      />
+      <motion.div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-48 -right-40 h-[40rem] w-[40rem] rounded-full blur-3xl"
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        transition={{ duration: 1.1, ease: "easeOut", delay: 0.15 }}
+        style={{
+          background:
+            "radial-gradient(60% 60% at 50% 50%, rgba(74,222,128,0.10) 0%, rgba(99,102,241,0.08) 35%, transparent 65%)",
+        }}
+      />
+
+      <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+        {/* Top grid with staggered reveal */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          className="grid grid-cols-1 gap-10 md:grid-cols-4"
+        >
+          {/* Brand / About */}
+          <motion.div variants={item}>
+            <h3 className="text-lg font-semibold text-white">TruScope</h3>
+            <p className="mt-4 text-sm leading-relaxed text-slate-400">
+              OurStudio is a digital agency UI / UX Design and Website
+              Development located in Ohio, United States of America.
             </p>
-          </div>
+            <p className="mt-6 text-xs text-slate-500">
+              Copyright TruScope Studio
+            </p>
+          </motion.div>
 
-          {/* Quick Links */}
-          <div>
-            <h4 className="text-lg font-semibold text-slate-100">
-              Quick Links
+          {/* Service */}
+          <motion.div variants={item}>
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+              Service
             </h4>
-            <ul className="mt-4 space-y-3">
-              {QUICK_LINKS.map((item) => (
-                <li key={item.label}>
+            <ul className="mt-4 space-y-3 text-sm">
+              {serviceLinks.map((label) => (
+                <motion.li key={label} variants={item}>
                   <Link
-                    href={item.href}
-                    className="text-slate-300 transition hover:text-white"
+                    href="#"
+                    className="relative inline-block transition hover:text-white"
                   >
-                    {item.label}
+                    {label}
+                    <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w-full" />
                   </Link>
-                </li>
+                </motion.li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          {/* Our Services */}
-          <div>
-            <h4 className="text-lg font-semibold text-slate-100">
-              Our Services
+          {/* Company */}
+          <motion.div variants={item}>
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+              Company
             </h4>
-            <ul className="mt-4 space-y-3">
-              {SERVICES.map((item) => (
-                <li key={item.label}>
+            <ul className="mt-4 space-y-3 text-sm">
+              {companyLinks.map((label) => (
+                <motion.li key={label} variants={item}>
                   <Link
-                    href={item.href}
-                    className="text-slate-300 transition hover:text-white"
+                    href="#"
+                    className="relative inline-block transition hover:text-white"
                   >
-                    {item.label}
+                    {label}
+                    <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w-full" />
                   </Link>
-                </li>
+                </motion.li>
               ))}
             </ul>
-          </div>
+          </motion.div>
 
-          {/* Contact */}
-          <div>
-            <h4 className="text-lg font-semibold text-slate-100">Contact</h4>
-            <ul className="mt-4 space-y-3 text-slate-300">
-              <li>
-                Email:{" "}
-                <a
-                  href="mailto:hello@truscope.com"
-                  className="transition hover:text-white"
-                >
-                  hello@truscope.com
-                </a>
-              </li>
-              <li>
-                Phone:{" "}
-                <a
-                  href="tel:+12345678690"
-                  className="transition hover:text-white"
-                >
-                  +1 (234) 567-8690
-                </a>
-              </li>
-              <li>Location: New York, USA</li>
-            </ul>
+          {/* Newsletter */}
+          <motion.div variants={item}>
+            <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
+              Join a Newsletter
+            </h4>
+            <form onSubmit={onSubscribe} className="mt-4">
+              <label
+                htmlFor="email"
+                className="mb-2 block text-xs text-slate-400"
+              >
+                Your Email
+              </label>
 
-            {/* Socials */}
-            <div className="mt-5 flex items-center gap-3">
-              <Social href="#" label="Facebook">
-                <FacebookIcon />
-              </Social>
-              <Social href="#" label="Twitter / X">
-                <TwitterIcon />
-              </Social>
-              <Social href="#" label="LinkedIn">
-                <LinkedInIcon />
-              </Social>
-              <Social href="#" label="Instagram">
-                <InstagramIcon />
-              </Social>
-            </div>
-          </div>
+              <div className="group relative flex gap-3">
+                <input
+                  id="email"
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter Your Email"
+                  className="w-full rounded-md border border-white/10 bg-[#1F2740] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 outline-none transition focus:ring-2 focus:ring-indigo-500"
+                />
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-80"
+                >
+                  {status === "loading" ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Subscribing…
+                    </>
+                  ) : (
+                    "Subscribe"
+                  )}
+                </button>
+
+                {/* Tiny success/error toast anchored to the form */}
+                <AnimatePresence>
+                  {status !== "idle" && status !== "loading" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 8 }}
+                      className={`pointer-events-none absolute -bottom-8 left-0 text-xs ${
+                        status === "success"
+                          ? "text-emerald-400"
+                          : "text-rose-400"
+                      }`}
+                    >
+                      {status === "success"
+                        ? "You're in! Check your inbox."
+                        : "Something went wrong. Try again."}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            </form>
+          </motion.div>
+        </motion.div>
+
+        {/* Animated divider (shimmer) */}
+        <div className="relative mt-10 h-px w-full overflow-hidden rounded bg-white/10">
+          <motion.span
+            aria-hidden
+            className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+            {...shimmer}
+          />
         </div>
 
-        {/* Divider */}
-        <div className="border-t border-white/10" />
+        {/* Bottom bar */}
+        <motion.div
+          variants={container}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.35 }}
+          className="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+        >
+          <motion.p variants={item} className="text-xs text-slate-500">
+            © 2025 TruScope. All rights reserved.
+          </motion.p>
 
-        {/* Copyright */}
-        <div className="py-6 text-center text-sm text-slate-400">
-          © {year} TruScope. All rights reserved.
-        </div>
+          <motion.div
+            variants={item}
+            className="flex flex-wrap items-center gap-6 text-sm"
+          >
+            <span className="flex items-center gap-2 text-slate-400">
+              <MapPin className="h-4 w-4" /> 8819 Ohio St. South Gate, CA 90280
+            </span>
+            <a
+              href="mailto:Ourstudio@hello.com"
+              className="flex items-center gap-2 text-slate-400 transition hover:text-white"
+            >
+              <Mail className="h-4 w-4" /> Ourstudio@hello.com
+            </a>
+            <a
+              href="tel:+13866883295"
+              className="flex items-center gap-2 text-slate-400 transition hover:text-white"
+            >
+              <Phone className="h-4 w-4" /> +1 386-688-3295
+            </a>
+          </motion.div>
+        </motion.div>
       </div>
     </footer>
-  );
-}
-
-/* ---------- UI helpers ---------- */
-function Social({
-  href,
-  label,
-  children,
-}: {
-  href: string;
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <Link
-      href={href}
-      aria-label={label}
-      className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 text-slate-300 transition hover:border-white/30 hover:text-white"
-    >
-      {children}
-    </Link>
-  );
-}
-
-/* Inline icons (no external deps) */
-function FacebookIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" {...props}>
-      <path d="M13 22v-8h3l1-4h-4V7.5A1.5 1.5 0 0 1 14.5 6H17V2h-2.5A5.5 5.5 0 0 0 9 7.5V10H6v4h3v8h4z" />
-    </svg>
-  );
-}
-function TwitterIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" {...props}>
-      <path d="M21 5.7c-.7.3-1.4.5-2.2.6.8-.5 1.4-1.2 1.7-2a8 8 0 0 1-2.5 1 3.7 3.7 0 0 0-6.4 3.4 10.5 10.5 0 0 1-7.7-3.9 3.7 3.7 0 0 0 1.1 5 3.6 3.6 0 0 1-1.7-.5v.1c0 1.8 1.3 3.3 3 3.7a3.7 3.7 0 0 1-1.7.1c.5 1.5 1.9 2.6 3.6 2.6A7.5 7.5 0 0 1 3 18.6 10.6 10.6 0 0 0 8.7 20c6.6 0 10.2-5.5 10.2-10.2v-.5c.7-.5 1.3-1.2 1.8-1.9z" />
-    </svg>
-  );
-}
-function LinkedInIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" {...props}>
-      <path d="M6.94 8.79H3.9V20h3.04V8.79zM5.42 3.5a1.77 1.77 0 1 0 0 3.54 1.77 1.77 0 0 0 0-3.54zM20.1 20v-6.17c0-3.29-1.76-4.82-4.1-4.82-1.9 0-2.75 1.05-3.23 1.79V8.79H9.74V20h3.04v-6.06c0-1.6.3-3.15 2.29-3.15 1.96 0 1.99 1.83 1.99 3.25V20h3.04z" />
-    </svg>
-  );
-}
-function InstagramIcon(props: React.SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" {...props}>
-      <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7zm5 3.8A5.2 5.2 0 1 1 6.8 13 5.2 5.2 0 0 1 12 7.8zm0 2A3.2 3.2 0 1 0 15.2 13 3.2 3.2 0 0 0 12 9.8zm5.4-2.4a1 1 0 1 1-1-1 1 1 0 0 1 1 1z" />
-    </svg>
   );
 }
