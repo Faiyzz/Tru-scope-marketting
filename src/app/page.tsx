@@ -19,10 +19,12 @@ export default function Page() {
       <ServicesVSLSection />
       <CallTeamSection />
        <StatsSection />
-      <TestimonialsSection />
-   
+     
+   <TalentServicesSection />
+  
      
       <PredictableGrowthSection />
+       <TestimonialsSection />
        <ReservationSection />
          <FaqSection />
     </>

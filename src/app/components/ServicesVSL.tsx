@@ -1,184 +1,122 @@
+// app/components/ServicesSection.tsx
 "use client";
 
-import { useMemo, useState } from "react";
-import { Scissors, Clapperboard, Globe2 } from "lucide-react";
+import { FC } from "react";
+import { PenTool, Clapperboard, Globe2 } from "lucide-react";
 
-/** Replace these with your own Vimeo IDs or local MP4s */
-type ServiceKey = "content" | "editing" | "web";
-type VideoCfg = { kind: "mp4"; src: string } | { kind: "vimeo"; id: string };
+const ACCENT = "#3ac4ec";
 
-const DEFAULT_VIDEOS: Record<ServiceKey, VideoCfg> = {
-  content: { kind: "vimeo", id: "1089303592" },
-  editing: { kind: "vimeo", id: "1089303621" },
-  web: { kind: "vimeo", id: "1089303686" },
+type Service = {
+  title: string;
+  description: string;
+  icon: FC<{ className?: string }>;
 };
 
-type Props = {
-  videos?: Partial<Record<ServiceKey, VideoCfg>>;
-};
+const SERVICES: Service[] = [
+  {
+    title: "Content Creation",
+    description:
+      "Scripts, captions, and creative assets tailored to your brand voice—ready to publish everywhere.",
+    icon: PenTool,
+  },
+  {
+    title: "Video Editing",
+    description:
+      "Short-form and long-form edits, motion graphics, subtitles, and platform-ready exports.",
+    icon: Clapperboard,
+  },
+  {
+    title: "Web Development",
+    description:
+      "Fast, modern websites with clean UX, SEO-friendly structure, and scalable components.",
+    icon: Globe2,
+  },
+];
 
-export default function ServicesVSLSection({ videos = {} }: Props) {
-  const mergedVideos: Record<ServiceKey, VideoCfg> = {
-    content: videos.content ?? DEFAULT_VIDEOS.content,
-    editing: videos.editing ?? DEFAULT_VIDEOS.editing,
-    web: videos.web ?? DEFAULT_VIDEOS.web,
-  };
-
-  const [active, setActive] = useState<ServiceKey>("content");
-  const activeVideo = mergedVideos[active];
-
+export default function ServicesSection() {
   return (
-    <section className="relative w-full overflow-hidden">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-16 items-center w-full">
-          {/* LEFT — Services list */}
-          <div className="relative">
-            <ol className="space-y-10 sm:space-y-12">
-              <ServiceItem
-                index="01"
-                title="Content Creating"
-                icon={<Scissors className="h-5 w-5" />}
-                description="Producing creative and meaningful digital content that connects with audiences, drives engagement, and inspires action."
-                active={active === "content"}
-                onClick={() => setActive("content")}
+    <section
+      aria-labelledby="services-heading"
+      className="bg-white"
+      style={
+        {
+          // Make the accent available to Tailwind utilities via inline CSS var
+          // (used below with arbitrary values, e.g., ring-[--accent])
+          ["--accent" as any]: ACCENT,
+        } as React.CSSProperties
+      }
+    >
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <header className="mx-auto max-w-3xl text-center">
+          <h2
+            id="services-heading"
+            className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl"
+          >
+            Services
+          </h2>
+          <p className="mt-4 text-base text-gray-600">
+            White-glove creative and technical execution with a focus on clarity,
+            speed, and results.
+          </p>
+        </header>
+
+        <div className="mt-12 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          {SERVICES.map(({ title, description, icon: Icon }) => (
+            <article
+              key={title}
+              className="
+                group relative flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6
+                shadow-sm transition-transform hover:-translate-y-0.5
+                focus-within:-translate-y-0.5
+              "
+            >
+              {/* Accent bar */}
+              <span
+                aria-hidden="true"
+                className="absolute inset-x-0 top-0 h-1 rounded-t-2xl"
+                style={{ backgroundColor: "var(--accent)" }}
               />
 
-              <ServiceItem
-                index="02"
-                title="Video Editing"
-                icon={<Clapperboard className="h-5 w-5" />}
-                description="Shaping raw clips into professional, engaging visuals that tell powerful stories and leave a lasting impact."
-                active={active === "editing"}
-                onClick={() => setActive("editing")}
-              />
-
-              <ServiceItem
-                index="03"
-                title="Web Development"
-                icon={<Globe2 className="h-5 w-5" />}
-                description="Designing and developing responsive, user-friendly websites that bring your brand to life in the digital world."
-                active={active === "web"}
-                onClick={() => setActive("web")}
-              />
-            </ol>
-          </div>
-
-          {/* RIGHT — Simple single card with drop shadow */}
-          <div className="relative">
-            <div className="relative rounded-3xl bg-white ring-1 ring-black/5 shadow-[0_18px_50px_-12px_rgba(0,0,0,0.3)] overflow-hidden">
-              <div className="aspect-video">
-                <VideoPlayer key={videoKey(activeVideo)} cfg={activeVideo} />
+              {/* Icon */}
+              <div
+                className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[rgb(58_196_236/0.12)] ring-1 ring-[rgb(58_196_236/0.25)]"
+                aria-hidden="true"
+              >
+                <Icon className="h-6 w-6" style={{ color: "var(--accent)" }} />
               </div>
-            </div>
-          </div>
+
+              {/* Text */}
+              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-gray-600">{description}</p>
+
+              {/* CTA (optional, accessible focus) */}
+              <div className="mt-5">
+                <a
+                  href="#contact"
+                  className="
+                    inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium
+                    text-gray-900 ring-1 ring-gray-300 transition
+                    hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2
+                  "
+                  style={{
+                    // Blue accent for focus ring and hover border
+                    // Tailwind arbitrary values allow CSS var usage
+                    boxShadow: "none",
+                  }}
+                >
+                  Learn more
+                </a>
+              </div>
+
+              {/* Keyboard focus ring for the whole card */}
+              <span
+                className="pointer-events-none absolute inset-0 rounded-2xl ring-0 transition group-focus-within:ring-2"
+                style={{ boxShadow: "none", borderColor: "var(--accent)" }}
+              />
+            </article>
+          ))}
         </div>
       </div>
     </section>
   );
-}
-
-/* ---------- Subcomponents ---------- */
-
-function ServiceItem(props: {
-  index: string;
-  title: string;
-  description: string;
-  icon: React.ReactNode;
-  active?: boolean;
-  onClick?: () => void;
-}) {
-  const { index, title, description, icon, active, onClick } = props;
-  return (
-    <li>
-      <button
-        type="button"
-        onClick={onClick}
-        className={[
-          "group w-full text-left grid grid-cols-[auto_1fr] gap-x-5 sm:gap-x-6",
-          "items-start focus:outline-none cursor-pointer select-none",
-        ].join(" ")}
-      >
-        {/* Number column */}
-        <div className="relative cursor-pointer">
-          <div className="text-2xl sm:text-3xl font-semibold tabular-nums text-neutral-900">
-            {index}
-          </div>
-        </div>
-
-        {/* Content column */}
-        <div className="relative pl-4 border-l-2 border-transparent sm:pl-6">
-          {/* active accent line */}
-          <span
-            className={[
-              "absolute -left-[2px] top-0 h-full w-[2px] rounded-full transition-colors",
-              active
-                ? "bg-violet-500"
-                : "bg-transparent group-hover:bg-violet-300",
-            ].join(" ")}
-          />
-          {/* icon bubble */}
-          <div
-            className={[
-              "mb-3 inline-flex h-8 w-8 items-center justify-center rounded-full border",
-              "transition-colors",
-              active
-                ? "border-violet-500 text-violet-600 bg-violet-50"
-                : "border-neutral-200 text-neutral-600 bg-white group-hover:border-violet-300 group-hover:text-violet-500",
-            ].join(" ")}
-            aria-hidden
-          >
-            {icon}
-          </div>
-
-          <h3
-            className={[
-              "text-xl sm:text-2xl font-semibold tracking-tight cursor-pointer",
-              active ? "text-neutral-900" : "text-neutral-800",
-            ].join(" ")}
-          >
-            {title}
-          </h3>
-          <p className="mt-2 max-w-prose text-sm sm:text-[15px] leading-6 text-neutral-500 cursor-pointer">
-            {description}
-          </p>
-        </div>
-      </button>
-    </li>
-  );
-}
-
-function VideoPlayer({ cfg }: { cfg: VideoCfg }) {
-  if (cfg.kind === "mp4") {
-    return (
-      <video
-        src={cfg.src}
-        className="h-full w-full object-cover"
-        controls
-        preload="metadata"
-        playsInline
-      />
-    );
-  }
-
-  // Vimeo embed
-  const src = useMemo(
-    () =>
-      `https://player.vimeo.com/video/${cfg.id}?title=0&byline=0&portrait=0&dnt=1`,
-    [cfg.id]
-  );
-
-  return (
-    <iframe
-      src={src}
-      title="Service video"
-      className="h-full w-full"
-      allow="autoplay; fullscreen; picture-in-picture"
-      allowFullScreen
-      loading="lazy"
-    />
-  );
-}
-
-function videoKey(cfg: VideoCfg) {
-  return cfg.kind === "mp4" ? `mp4:${cfg.src}` : `vimeo:${cfg.id}`;
 }
