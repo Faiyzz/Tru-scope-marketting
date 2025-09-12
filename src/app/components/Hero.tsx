@@ -64,15 +64,14 @@ export default function Hero() {
               {/* LEFT */}
               <header className="max-w-2xl mx-auto text-center md:text-left">
                 {/* improved, bigger hook */}
-                <h1 className="tracking-tight">
-                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.05]">
-                    Crafting <span className="text-shine bg-clip-text text-transparent">Stories</span>
-                  </span>
-                  <span className="mt-3 block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold">
-                    that <em className="not-italic">Connect</em> &nbsp;
-                    <span className="text-shine bg-clip-text text-transparent">Inspire</span>
-                  </span>
-                </h1>
+             <h1 className="tracking-tight">
+  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.05]">
+    Content that <span className="text-shine bg-clip-text text-transparent">Scales</span>
+  </span>
+  <span className="mt-3 block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold">
+    Growth that <span className="text-shine bg-clip-text text-transparent">Lasts</span>
+  </span>
+</h1>
 
                 <p className="mt-5 text-base sm:text-lg md:text-xl text-gray-700/90">
                   Turning ideas into impactful digital experiences.
