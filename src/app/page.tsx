@@ -9,7 +9,7 @@ import ServicesVSLSection from "./components/ServicesVSL";
 import StatsSection from "./components/State";
 import TestimonialsSection from "./components/Testimonilas";
 import TalentServicesSection from "./components/Services";
-import WhyUsSection from "./components/Whyus";
+
 
 export default function Page() {
   return (

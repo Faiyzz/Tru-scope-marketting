@@ -1,30 +1,23 @@
+// src/app/components/Footer.tsx
 "use client";
 
 import Link from "next/link";
 import { useState, FormEvent } from "react";
 import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants, easeOut, cubicBezier } from "framer-motion";
 
-/**
- * Animated Footer
- * - Subtle aurora background
- * - Staggered fade/slide-in on scroll
- * - Shimmering divider
- * - Newsletter button loading + success toast
- */
 export default function Footer() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
+    "idle"
+  );
 
   const onSubscribe = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!email) return;
     setStatus("loading");
     try {
-      // TODO: replace with your API call (e.g., fetch("/api/subscribe", {...}))
-      await new Promise((r) => setTimeout(r, 1000)); // demo latency
+      await new Promise((r) => setTimeout(r, 1000)); // mock
       console.log("Subscribe:", email);
       setEmail("");
       setStatus("success");
@@ -35,24 +28,35 @@ export default function Footer() {
     }
   };
 
-  // Animation presets
-  const container = {
+  // --- Animation presets (typed) ---
+  const container: Variants = {
     hidden: {},
     show: {
       transition: { staggerChildren: 0.08, delayChildren: 0.1 },
     },
   };
-  const item = {
+
+  const item: Variants = {
     hidden: { opacity: 0, y: 14 },
-    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
+    show: {
+      opacity: 1,
+      y: 0,
+      transition: { duration: 0.5, ease: easeOut },
+    },
   };
+
   const shimmer = {
     initial: { x: "-100%" },
     animate: {
       x: "100%",
-      transition: { duration: 2.4, ease: "linear", repeat: Infinity },
+      transition: {
+        duration: 2.4,
+        ease: cubicBezier(0, 0, 1, 1),
+        repeat: Infinity,          // OK with Framer types
+        repeatType: "loop",        // optional, explicit loop
+      },
     },
-  };
+  } as const;
 
   const serviceLinks = [
     "Illustration",
@@ -80,7 +84,7 @@ export default function Footer() {
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 1.1, ease: "easeOut" }}
+        transition={{ duration: 1.1, ease: easeOut }}
         style={{
           background:
             "radial-gradient(60% 60% at 50% 50%, rgba(56,189,248,0.10) 0%, rgba(99,102,241,0.10) 35%, transparent 65%)",
@@ -92,7 +96,7 @@ export default function Footer() {
         initial={{ opacity: 0, scale: 0.9 }}
         whileInView={{ opacity: 1, scale: 1 }}
         viewport={{ once: true }}
-        transition={{ duration: 1.1, ease: "easeOut", delay: 0.15 }}
+        transition={{ duration: 1.1, ease: easeOut, delay: 0.15 }}
         style={{
           background:
             "radial-gradient(60% 60% at 50% 50%, rgba(74,222,128,0.10) 0%, rgba(99,102,241,0.08) 35%, transparent 65%)",
@@ -205,11 +209,10 @@ export default function Footer() {
                       initial={{ opacity: 0, y: 8 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: 8 }}
-                      className={`pointer-events-none absolute -bottom-8 left-0 text-xs ${
-                        status === "success"
+                      className={`pointer-events-none absolute -bottom-8 left-0 text-xs ${status === "success"
                           ? "text-emerald-400"
                           : "text-rose-400"
-                      }`}
+                        }`}
                     >
                       {status === "success"
                         ? "You're in! Check your inbox."

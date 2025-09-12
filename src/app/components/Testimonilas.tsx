@@ -1,6 +1,6 @@
 // components/TestimonialsSection.tsx
 "use client";
-
+import Image from "next/image";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 type Testimonial = {
@@ -130,7 +130,7 @@ export default function TestimonialsSection({
                   {/* Header: avatar + name */}
                   <div className="flex items-center gap-3">
                     {t.avatarUrl ? (
-                      <img
+                      <Image
                         src={t.avatarUrl}
                         alt={`${t.name} avatar`}
                         className="h-12 w-12 rounded-full object-cover"
