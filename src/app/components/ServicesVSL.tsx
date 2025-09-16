@@ -1,105 +1,173 @@
 // src/app/components/ServicesSection.tsx
 "use client";
 
-import type { CSSProperties } from "react";
-import { PenTool, Clapperboard, Globe2 } from "lucide-react";
-
-const ACCENT = "#3ac4ec";
+import type { ReactElement, CSSProperties } from "react";
+import { Clapperboard, CalendarDays, Megaphone, Globe2 } from "lucide-react";
+import { motion, Variants, easeOut } from "framer-motion";
 
 type Service = {
   title: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
+  badge?: string;
 };
 
 const SERVICES: Service[] = [
   {
-    title: "Content Creation",
+    title: "Video Content Creation",
     description:
-      "Scripts, captions, and creative assets tailored to your brand voice—ready to publish everywhere.",
-    icon: PenTool,
+      "Reels/shorts with hooks, subtitles, motion graphics, and platform-ready exports.",
+    icon: Clapperboard,
   },
   {
-    title: "Video Editing",
+    title: "Social Media Management",
     description:
-      "Short-form and long-form edits, motion graphics, subtitles, and platform-ready exports.",
-    icon: Clapperboard,
+      "Calendar, scheduling, posting, DM triage, and community responses — end-to-end.",
+    icon: CalendarDays,
+  },
+  {
+    title: "Social Media Marketing",
+    description:
+      "Creative strategy, content angles, and paid assets that drive reach and conversions.",
+    icon: Megaphone,
   },
   {
     title: "Web Development",
     description:
-      "Fast, modern websites with clean UX, SEO-friendly structure, and scalable components.",
+      "Fast, modern sites with clean UX, SEO-friendly structure, and scalable components.",
     icon: Globe2,
   },
 ];
 
-export default function ServicesSection() {
-  // define CSS var safely
-  const accentStyle: CSSProperties & { "--accent": string } = {
-    "--accent": ACCENT,
-  };
+// Reuse the same gradient everywhere (no styled-jsx)
+const GRADIENT = "linear-gradient(100deg,#8a5cff,#b18cff,#3ac4ec,#8a5cff)";
 
+const gridVariants: Variants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } },
+};
+
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 16, scale: 0.98 },
+  show: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: { duration: 0.5, ease: easeOut },
+  },
+};
+
+export default function ServicesSection(): ReactElement {
+  const style: CSSProperties = {};
   return (
     <section
       aria-labelledby="services-heading"
       className="bg-white"
-      style={accentStyle}
+      style={style}
     >
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
-          <h2
+          {/* Animated gradient heading via Framer Motion (no keyframes needed) */}
+          <motion.h2
             id="services-heading"
-            className="text-3xl font-semibold tracking-tight text-gray-900 sm:text-4xl"
+            className="text-3xl font-semibold tracking-tight sm:text-4xl bg-clip-text text-transparent"
+            style={{
+              backgroundImage: GRADIENT,
+              backgroundSize: "200% auto",
+              backgroundPosition: "0% center",
+            }}
+            initial={{ backgroundPosition: "0% center" }}
+            animate={{ backgroundPosition: "200% center" }}
+            transition={{ duration: 6, ease: "linear", repeat: Infinity }}
           >
             Services
-          </h2>
+          </motion.h2>
+
           <p className="mt-4 text-base text-gray-600">
             Creative and technical execution with a focus on clarity, speed, and
             results.
           </p>
         </header>
 
-        <div className="mt-12 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-3">
-          {SERVICES.map(({ title, description, icon: Icon }) => (
-            <article
+        <motion.div
+          variants={gridVariants}
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true, amount: 0.25 }}
+          className="mt-12 grid gap-6 sm:gap-8 sm:grid-cols-2 lg:grid-cols-4"
+        >
+          {SERVICES.map(({ title, description, icon: Icon, badge }) => (
+            <motion.article
               key={title}
-              className="group relative flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-transform hover:-translate-y-0.5 focus-within:-translate-y-0.5"
+              variants={cardVariants}
+              whileHover={{ scale: 1.03, y: -6 }}
+              whileTap={{ scale: 0.99 }}
+              className="group relative flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6
+                         shadow-[0_8px_30px_rgba(2,6,23,0.06)] transition-all will-change-transform
+                         hover:shadow-[0_18px_50px_rgba(2,6,23,0.12)]"
             >
-              {/* Accent bar */}
-              <span
-                aria-hidden="true"
-                className="absolute inset-x-0 top-0 h-1 rounded-t-2xl bg-[--accent]"
+              {/* Gradient top bar */}
+              <motion.span
+                aria-hidden
+                className="absolute inset-x-0 top-0 h-1.5 rounded-t-2xl"
+                style={{
+                  backgroundImage: GRADIENT,
+                  backgroundSize: "200% auto",
+                  backgroundPosition: "0% center",
+                  clipPath: "inset(0 round 1rem 1rem 0 0)",
+                }}
+                whileHover={{ backgroundPosition: "100% center" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
               />
 
-              {/* Icon */}
-              <div
-                className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-[rgb(58_196_236/0.12)] ring-1 ring-[rgb(58_196_236/0.25)] text-[--accent]"
-                aria-hidden="true"
+              {/* Icon chip */}
+              <motion.div
+                aria-hidden
+                className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl text-white
+                           shadow-sm ring-1 ring-black/5"
+                style={{
+                  backgroundImage: GRADIENT,
+                  backgroundSize: "200% auto",
+                  backgroundPosition: "0% center",
+                }}
+                whileHover={{ backgroundPosition: "100% center" }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
               >
                 <Icon className="h-6 w-6" />
-              </div>
+              </motion.div>
 
               {/* Text */}
               <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              {badge && (
+                <span className="mt-1 inline-flex items-center rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-gray-900 ring-1 ring-black/5">
+                  {badge}
+                </span>
+              )}
               <p className="mt-2 text-sm leading-6 text-gray-600">
                 {description}
               </p>
 
               {/* CTA */}
-              <div className="mt-5">
-                <a
-                  href="#contact"
-                  className="inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium text-gray-900 ring-1 ring-gray-300 transition hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-[--accent] focus-visible:ring-offset-2"
-                >
-                  Learn more
-                </a>
-              </div>
+              <motion.a
+                href="#contact"
+                className="mt-5 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-semibold text-white shadow-md hover:shadow-lg"
+                style={{
+                  backgroundImage: GRADIENT,
+                  backgroundSize: "200% auto",
+                  backgroundPosition: "0% center",
+                }}
+                whileHover={{ backgroundPosition: "100% center" }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ duration: 0.6, ease: "easeOut" }}
+              >
+                Learn More
+              </motion.a>
 
-              {/* Focus ring for card */}
-              <span className="pointer-events-none absolute inset-0 rounded-2xl ring-0 transition group-focus-within:ring-2 group-focus-within:ring-[--accent]" />
-            </article>
+              {/* Focus ring */}
+              <span className="pointer-events-none absolute inset-0 rounded-2xl ring-0 transition group-focus-within:ring-2 group-focus-within:ring-[#3ac4ec]" />
+            </motion.article>
           ))}
-        </div>
+        </motion.div>
       </div>
     </section>
   );

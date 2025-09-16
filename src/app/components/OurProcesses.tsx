@@ -27,7 +27,7 @@ type Props = {
   metrics?: Metric[];
   advantages?: string[];
   onCtaClick?: () => void;
-  initialLoadingMs?: number; // skeleton duration (ms)
+  initialLoadingMs?: number;
 };
 
 export default function PredictableGrowthSection({
@@ -87,7 +87,6 @@ export default function PredictableGrowthSection({
     return () => clearTimeout(t);
   }, [initialLoadingMs]);
 
-  // Stable skeleton arrays
   const SKELETON_STEPS = React.useMemo(
     () => Array.from({ length: 5 }, (_, i) => i),
     []
@@ -103,11 +102,11 @@ export default function PredictableGrowthSection({
 
   /* ---- scroll progress + in-view ---- */
   const sectionRef = React.useRef<HTMLElement | null>(null);
-  const listRef = React.useRef<HTMLDivElement | null>(null);
+  const railWrapRef = React.useRef<HTMLDivElement | null>(null); // only wraps the steps (not CTA)
   const metricsRef = React.useRef<HTMLDivElement | null>(null);
 
   const { scrollYProgress } = useScroll({
-    target: listRef,
+    target: railWrapRef, // ✅ rail only measures the steps container
     offset: ["start 0.8", "end 0.2"],
   });
 
@@ -132,7 +131,7 @@ export default function PredictableGrowthSection({
       ref={sectionRef as React.RefObject<HTMLElement>}
       className="relative isolate w-full max-w-[100vw] overflow-hidden bg-white"
     >
-      {/* CLIPPED decorations wrapper (prevents horizontal scroll from blurs/transforms) */}
+      {/* CLIPPED decorations */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
@@ -156,37 +155,24 @@ export default function PredictableGrowthSection({
       </div>
 
       <div className="relative mx-auto max-w-6xl px-6 py-14 md:py-16 lg:px-8">
-        {/* Heading */}
+        {/* Heading — tightened spacing + size */}
         <motion.header
           variants={container}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.25 }}
-          className="max-w-3xl"
+          className="max-w-3xl mx-auto text-center"
         >
-          <motion.div
-            variants={item}
-            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5 text-xs"
-          >
-            <span
-              className="inline-block h-2.5 w-2.5 rounded-full shadow-[0_0_0_4px_rgba(58,196,236,0.15)]"
-              style={{ backgroundColor: ACCENT }}
-            />
-            <span className="font-medium text-slate-600">
-              Predictable Growth Playbook
-            </span>
-          </motion.div>
-
           <motion.h2
             variants={item}
-            className="mt-3 bg-[linear-gradient(180deg,#0f172a_0%,#334155_100%)] bg-clip-text text-3xl font-extrabold leading-tight text-transparent md:text-5xl"
+            className="mt-1 text-gradient font-extrabold leading-[0.98] tracking-tight text-[clamp(28px,6vw,56px)]"
           >
             {title}
           </motion.h2>
 
           <motion.p
             variants={item}
-            className="mt-3 text-base leading-relaxed text-slate-600 md:text-lg"
+            className="mt-2 text-base md:text-lg text-slate-600"
           >
             {subtitle}
           </motion.p>
@@ -221,14 +207,14 @@ export default function PredictableGrowthSection({
                     variants={item}
                     className="space-y-1"
                   >
-                    <div className="text-3xl font-extrabold tracking-tight text-slate-900 sm:text-4xl">
-                      <span className="tabular-nums">
+                    <div className="text-3xl sm:text-4xl font-extrabold tracking-tight">
+                      <span className="tabular-nums text-gradient">
                         <CountUp
                           end={m.value}
                           duration={900 + i * 120}
                           play={metricsInView && !loading}
                         />
-                        <MetricSuffix id={m.id} />
+                        <MetricSuffix id={m.id} gradient />
                       </span>
                     </div>
                     <div className="text-xs font-medium text-slate-700 sm:text-sm">
@@ -243,20 +229,18 @@ export default function PredictableGrowthSection({
         <div className="mt-10 grid grid-cols-1 gap-8 md:mt-12 md:grid-cols-12">
           {/* LEFT: Steps with progress rail */}
           <div className="md:col-span-7">
+            {/* ✅ This wrapper only includes the steps; rail stops at step #5 */}
             <div
-              ref={listRef}
-              className="relative overflow-hidden md:overflow-visible"
+              ref={railWrapRef}
+              className="relative overflow-hidden md:overflow-visible pb-1"
             >
-              {/* Rail (kept inside container to avoid overflow) */}
-              <div className="absolute left-5 top-0 hidden h-full w-px -translate-x-1/2 bg-slate-200 md:block" />
+              {/* Rail base + fill (theme gradient) */}
+              <div className="absolute left-5 top-0 hidden h-full w-[3px] -translate-x-1/2 rounded rail-base md:block" />
               <motion.div
-                className="absolute left-5 top-0 hidden w-[3px] -translate-x-1/2 rounded md:block"
-                style={{
-                  height: fillY,
-                  background: ACCENT,
-                  boxShadow: `0 0 18px ${ACCENT}66`,
-                }}
+                className="absolute left-5 top-0 hidden w-[3px] -translate-x-1/2 rounded rail-fill md:block"
+                style={{ height: fillY }}
               />
+
               <ol className="space-y-4">
                 {loading
                   ? SKELETON_STEPS.map((i) => (
@@ -268,15 +252,8 @@ export default function PredictableGrowthSection({
                         viewport={{ once: true, amount: 0.35 }}
                         className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:pl-16"
                       >
-                        {/* Dot */}
                         <div className="pointer-events-none absolute left-5 top-5 hidden -translate-x-1/2 md:block">
-                          <div
-                            className="grid h-9 w-9 place-items-center rounded-full shadow-md"
-                            style={{
-                              background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
-                              boxShadow: `0 20px 40px -15px ${ACCENT}66`,
-                            }}
-                          >
+                          <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
                             <span className="text-sm font-bold text-white">
                               {i + 1}
                             </span>
@@ -299,15 +276,8 @@ export default function PredictableGrowthSection({
                         viewport={{ once: true, amount: 0.35 }}
                         className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-16"
                       >
-                        {/* Step dot */}
                         <div className="pointer-events-none absolute left-5 top-5 hidden -translate-x-1/2 md:block">
-                          <div
-                            className="grid h-9 w-9 place-items-center rounded-full shadow-md"
-                            style={{
-                              background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
-                              boxShadow: `0 20px 40px -15px ${ACCENT}66`,
-                            }}
-                          >
+                          <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
                             <span className="text-sm font-bold text-white">
                               {s.id}
                             </span>
@@ -315,7 +285,7 @@ export default function PredictableGrowthSection({
                         </div>
 
                         <div className="ml-0 md:ml-2">
-                          <h3 className="text-base font-semibold text-slate-900 md:text-lg">
+                          <h3 className="text-base md:text-lg font-semibold text-slate-900">
                             {s.title}
                           </h3>
                           <p className="mt-1 text-sm text-slate-600">
@@ -325,51 +295,36 @@ export default function PredictableGrowthSection({
                       </motion.li>
                     ))}
               </ol>
-
-              {/* CTA */}
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-                className="mt-7 md:mt-9"
-              >
-                <button
-                  onClick={onCtaClick}
-                  className="group relative inline-flex items-center gap-2 rounded-xl px-6 py-3 text-sm font-semibold text-white transition-all focus:outline-none active:scale-[0.99]"
-                  style={{
-                    background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
-                    boxShadow: `0 18px 40px -15px ${ACCENT}7a`,
-                  }}
-                >
-                  <motion.span
-                    aria-hidden
-                    className="pointer-events-none absolute inset-0 rounded-xl"
-                    initial={{ x: "-120%" }}
-                    whileHover={{ x: "120%" }}
-                    transition={{ duration: 0.9, ease: "easeInOut" }}
-                    style={{
-                      background:
-                        "linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)",
-                    }}
-                  />
-                  <span className="relative">Start My Strategy</span>
-                  <svg
-                    className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                    viewBox="0 0 20 20"
-                    fill="none"
-                  >
-                    <path
-                      d="M7 5l5 5-5 5"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                </button>
-              </motion.div>
             </div>
+
+            {/* CTA (kept outside railWrapRef so the rail doesn't extend under it) */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
+              className="mt-7 md:mt-9"
+            >
+              <button
+                onClick={onCtaClick}
+                className="group btn-base btn-gradient text-white shadow-md hover:shadow-lg"
+              >
+                <span className="relative">Start My Strategy</span>
+                <svg
+                  className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                >
+                  <path
+                    d="M7 5l5 5-5 5"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </button>
+            </motion.div>
           </div>
 
           {/* RIGHT: Sticky benefits + CTA */}
@@ -401,23 +356,8 @@ export default function PredictableGrowthSection({
                 <div className="mt-6">
                   <button
                     onClick={onCtaClick}
-                    className="group relative inline-flex w-full items-center justify-center gap-2 rounded-xl px-5 py-3 text-sm font-semibold text-white transition-all focus:outline-none active:scale-[0.99]"
-                    style={{
-                      background: `linear-gradient(135deg, ${ACCENT} 0%, ${ACCENT_DARK} 100%)`,
-                      boxShadow: `0 16px 36px -14px ${ACCENT}7a`,
-                    }}
+                    className="group btn-base btn-gradient w-full text-white shadow-md hover:shadow-lg"
                   >
-                    <motion.span
-                      aria-hidden
-                      className="pointer-events-none absolute inset-0 rounded-xl"
-                      initial={{ x: "-120%" }}
-                      whileHover={{ x: "120%" }}
-                      transition={{ duration: 0.9, ease: "easeInOut" }}
-                      style={{
-                        background:
-                          "linear-gradient(90deg,transparent,rgba(255,255,255,0.2),transparent)",
-                      }}
-                    />
                     <span className="relative">Start My Strategy</span>
                     <svg
                       className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
@@ -439,6 +379,93 @@ export default function PredictableGrowthSection({
           </div>
         </div>
       </div>
+
+      {/* Local theme helpers */}
+      <style jsx>{`
+        :root {
+          --brand-purple: var(--brand-purple, #8a5cff);
+          --brand-lilac: var(--brand-lilac, #b18cff);
+          --brand-cyan: var(--brand-cyan, #3ac4ec);
+        }
+
+        /* gradient text (numbers + heading) */
+        .text-gradient {
+          background-image: linear-gradient(
+            100deg,
+            var(--brand-purple),
+            var(--brand-lilac),
+            var(--brand-cyan),
+            var(--brand-purple)
+          );
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
+        /* shared button base + gradient fill (same as hero/nav) */
+        .btn-base {
+          height: 44px;
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          padding-inline: 1.25rem;
+          border-radius: 9999px;
+          font-weight: 600;
+          font-size: 0.875rem;
+          line-height: 1;
+        }
+        @media (min-width: 640px) {
+          .btn-base {
+            padding-inline: 1.375rem;
+          }
+        }
+        .btn-gradient {
+          background-image: linear-gradient(
+            100deg,
+            var(--brand-purple) 0%,
+            var(--brand-lilac) 35%,
+            var(--brand-cyan) 70%,
+            var(--brand-purple) 100%
+          );
+          background-size: 200% auto;
+          transition: background-position 0.6s ease, box-shadow 0.25s ease,
+            transform 0.12s ease;
+        }
+        .btn-gradient:hover {
+          background-position: 100% center;
+        }
+        .btn-gradient:active {
+          transform: translateY(1px);
+        }
+
+        /* THEME rail & step badges */
+        .rail-base {
+          background: linear-gradient(
+            180deg,
+            rgba(138, 92, 255, 0.2),
+            rgba(58, 196, 236, 0.2)
+          );
+        }
+        .rail-fill {
+          background-image: linear-gradient(
+            180deg,
+            var(--brand-purple),
+            var(--brand-lilac),
+            var(--brand-cyan)
+          );
+          box-shadow: 0 0 18px rgba(58, 196, 236, 0.45);
+        }
+        .step-badge {
+          background-image: linear-gradient(
+            135deg,
+            var(--brand-purple),
+            var(--brand-lilac),
+            var(--brand-cyan)
+          );
+          box-shadow: 0 20px 40px -15px rgba(58, 196, 236, 0.4);
+        }
+      `}</style>
     </section>
   );
 }
@@ -462,11 +489,16 @@ function CheckIcon() {
   );
 }
 
-/** Small suffixes for certain metric IDs */
-function MetricSuffix({ id }: { id: string }) {
-  if (id === "roi") return <span className="ml-0.5 text-slate-900">×</span>;
-  if (id === "retention")
-    return <span className="ml-0.5 text-slate-900">%</span>;
+function MetricSuffix({
+  id,
+  gradient = false,
+}: {
+  id: string;
+  gradient?: boolean;
+}) {
+  const cls = gradient ? "ml-0.5 text-gradient" : "ml-0.5 text-slate-900";
+  if (id === "roi") return <span className={cls}>×</span>;
+  if (id === "retention") return <span className={cls}>%</span>;
   return null;
 }
 
@@ -493,7 +525,7 @@ function CountUp({
     const step = (t: number) => {
       if (startRef.current == null) startRef.current = t;
       const p = Math.min(1, (t - startRef.current) / duration);
-      const eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
+      const eased = 1 - Math.pow(1 - p, 3);
       setVal(Math.round(end * eased));
       if (p < 1) raf = requestAnimationFrame(step);
     };

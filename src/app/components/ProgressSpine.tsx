@@ -2,6 +2,7 @@
 
 import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
+import type { LucideIcon } from "lucide-react";
 import {
   Target,
   PenSquare,
@@ -9,44 +10,59 @@ import {
   Scissors,
   Image as ImageIcon,
   BarChart3,
+  MessageSquare,
 } from "lucide-react";
 
-const features = [
+/* --------- Steps (studio-only) --------- */
+type Feature = {
+  title: string;
+  desc: string;
+  Icon: LucideIcon;
+  side: "left" | "right";
+};
+
+const features: Feature[] = [
   {
     title: "Strategy & Pillars",
     desc: "ICP research, content pillars, and a monthly plan aligned to outcomes.",
-    icon: <Target className="w-6 h-6 text-purple-700" />,
+    Icon: Target,
     side: "left",
   },
   {
     title: "Pre-Production & Scripting",
-    desc: "Hooks, outlines, scripts, and shot lists so shoot day runs fast.",
-    icon: <PenSquare className="w-6 h-6 text-purple-700" />,
+    desc: "Hooks, outlines, scripts, and shot lists so recording runs fast.",
+    Icon: PenSquare,
     side: "right",
   },
   {
-    title: "Production (Shoot Day)",
-    desc: "On-site/studio filming with lighting, audio, and direction.",
-    icon: <Camera className="w-6 h-6 text-purple-700" />,
+    title: "Record & Upload (No On-Site Filming)",
+    desc: "You record on your phone/camera using our guides. Upload raw takes to a shared Google Drive.",
+    Icon: Camera,
     side: "left",
+  },
+  {
+    title: "Collaboration (Slack + Notion)",
+    desc: "Private Slack for communication. Notion dashboard for calendar, briefs, approvals, and assets.",
+    Icon: MessageSquare,
+    side: "right",
   },
   {
     title: "Editing & Motion",
     desc: "Cuts, pacing, sound design, captions, and tasteful motion graphics.",
-    icon: <Scissors className="w-6 h-6 text-purple-700" />,
-    side: "right",
+    Icon: Scissors,
+    side: "left",
   },
   {
     title: "Thumbnails & Covers",
     desc: "Scroll-stopping graphics and on-brand visuals to lift CTR.",
-    icon: <ImageIcon className="w-6 h-6 text-purple-700" />,
-    side: "left",
+    Icon: ImageIcon,
+    side: "right",
   },
   {
     title: "Posting & Analytics",
     desc: "Platform-aware posting, calendar scheduling, and weekly iteration.",
-    icon: <BarChart3 className="w-6 h-6 text-purple-700" />,
-    side: "right",
+    Icon: BarChart3,
+    side: "left",
   },
 ];
 
@@ -62,26 +78,22 @@ export default function CallTeamSection() {
 
   // Measure actual travel: spine wrapper height - highlight height
   const [travel, setTravel] = React.useState(0);
-
   React.useLayoutEffect(() => {
     const calc = () => {
       const spineH = spineWrapRef.current?.offsetHeight ?? 0;
       const hlH = highlightRef.current?.offsetHeight ?? 0;
       setTravel(Math.max(0, spineH - hlH));
     };
-
     calc();
 
     let ro: ResizeObserver | null = null;
     if (typeof window !== "undefined" && "ResizeObserver" in window) {
-      ro = new ResizeObserver(() => calc());
-      if (spineWrapRef.current) ro.observe(spineWrapRef.current);
-      if (highlightRef.current) ro.observe(highlightRef.current);
+      ro = new ResizeObserver(calc);
+      spineWrapRef.current && ro.observe(spineWrapRef.current);
+      highlightRef.current && ro.observe(highlightRef.current);
     }
-
     const onResize = () => calc();
     window.addEventListener("resize", onResize);
-
     return () => {
       ro?.disconnect();
       window.removeEventListener("resize", onResize);
@@ -89,7 +101,6 @@ export default function CallTeamSection() {
   }, []);
 
   const highlightY = useTransform(scrollYProgress, (v) => v * travel);
-
   React.useEffect(() => {
     highlightY.set(scrollYProgress.get() * travel);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -119,8 +130,9 @@ export default function CallTeamSection() {
             Done-for-You Content Studio
           </h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
-            Strategy → Production → Editing → Distribution. We plan, shoot,
-            edit, and publish content that actually grows your brand.
+            Strategy → Recording → Editing → Distribution. No on-site filming.
+            Record, upload to Google Drive, collaborate in a private Slack, and
+            review in a shared Notion dashboard.
           </p>
         </motion.div>
 
@@ -131,25 +143,28 @@ export default function CallTeamSection() {
             className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 z-0 rounded-full"
             style={{
               width: spineW,
-              backgroundColor: "rgb(226 232 240)" /* slate-200 */,
-            }}
+              backgroundColor: "rgb(226 232 240)",
+            }} /* slate-200 */
           />
 
-          {/* Scroll highlight */}
+          {/* Scroll highlight — same behavior, themed color */}
           <motion.div
             ref={highlightRef}
-            style={{ y: highlightY, width: spineW }}
-            className="absolute left-1/2 -translate-x-1/2 h-24 bg-purple-600 rounded-full z-10"
+            style={{
+              y: highlightY,
+              width: spineW,
+              background: "var(--brand-cyan, #3ac4ec)",
+            }}
+            className="absolute left-1/2 -translate-x-1/2 h-24 rounded-full z-10"
           />
 
           {/* Items */}
           <div className="relative z-20 flex flex-col gap-y-20 md:gap-y-24">
             {features.map((item, idx) => {
               const isLeft = item.side === "left";
-
               return (
                 <motion.div
-                  key={idx}
+                  key={item.title}
                   initial={{ opacity: 0, x: isLeft ? -50 : 50 }}
                   whileInView={{ opacity: 1, x: 0 }}
                   transition={{ duration: 0.6, delay: idx * 0.07 }}
@@ -169,22 +184,19 @@ export default function CallTeamSection() {
                       >
                         <Card item={item} align="right" />
                       </div>
-                      {/* Connector ONLY from left card edge to spine */}
+                      {/* connector from left card edge to spine */}
                       <div
-                        className="hidden md:block bg-purple-300 self-center"
+                        className="hidden md:block grad-line self-center"
                         style={{ gridColumn: 2, height: connectorH }}
                       />
-                      {/* Spine spacer */}
                       <div
                         className="hidden md:block"
                         style={{ gridColumn: 3 }}
                       />
-                      {/* NO right connector */}
                       <div
                         className="hidden md:block"
                         style={{ gridColumn: 4 }}
                       />
-                      {/* Empty right card col */}
                       <div
                         className="hidden md:block"
                         style={{ gridColumn: 5 }}
@@ -193,24 +205,21 @@ export default function CallTeamSection() {
                   ) : (
                     /* RIGHT SIDE (desktop only) */
                     <>
-                      {/* Empty left card col */}
                       <div
                         className="hidden md:block"
                         style={{ gridColumn: 1 }}
                       />
-                      {/* NO left connector */}
                       <div
                         className="hidden md:block"
                         style={{ gridColumn: 2 }}
                       />
-                      {/* Spine spacer */}
                       <div
                         className="hidden md:block"
                         style={{ gridColumn: 3 }}
                       />
-                      {/* Connector ONLY from right card edge to spine */}
+                      {/* connector from right card edge to spine */}
                       <div
-                        className="hidden md:block bg-purple-300 self-center"
+                        className="hidden md:block grad-line self-center"
                         style={{ gridColumn: 4, height: connectorH }}
                       />
                       <div
@@ -222,7 +231,7 @@ export default function CallTeamSection() {
                     </>
                   )}
 
-                  {/* Mobile: single column, card full width */}
+                  {/* Mobile: single column */}
                   <div className="md:hidden col-span-full">
                     <Card item={item} align="center" />
                   </div>
@@ -233,15 +242,32 @@ export default function CallTeamSection() {
         </div>
       </div>
 
-      {/* Local styles for animated gradient borders */}
+      {/* Local styles (gradient + card) */}
       <style jsx>{`
+        :root {
+          --brand-purple: var(--brand-purple, #8a5cff);
+          --brand-lilac: var(--brand-lilac, #b18cff);
+          --brand-cyan: var(--brand-cyan, #3ac4ec);
+        }
+
+        /* connectors use brand gradient */
+        .grad-line {
+          background-image: linear-gradient(
+            90deg,
+            var(--brand-purple),
+            var(--brand-cyan)
+          );
+          border-radius: 9999px;
+        }
+
+        /* animated gradient border for cards */
         .card-gradient {
           background: linear-gradient(
             135deg,
-            rgba(124, 58, 237, 0.6),
-            rgba(99, 102, 241, 0.55),
-            rgba(56, 189, 248, 0.5),
-            rgba(124, 58, 237, 0.6)
+            var(--brand-purple),
+            var(--brand-lilac),
+            var(--brand-cyan),
+            var(--brand-purple)
           );
           background-size: 200% 200%;
           border-radius: 1rem;
@@ -268,34 +294,45 @@ function Card({
   item,
   align,
 }: {
-  item: { title: string; desc: string; icon: React.ReactNode };
+  item: Feature;
   align: "left" | "right" | "center";
 }) {
+  const { Icon } = item;
+
+  // Icon alignment: cards on the left → icon sits on the right (toward spine)
+  // cards on the right → icon sits on the left (toward spine). Mobile stays centered.
+  const justify =
+    align === "left"
+      ? "justify-start"
+      : align === "right"
+      ? "justify-end"
+      : "justify-center";
+  const textAlign =
+    align === "center" ? "center" : align === "left" ? "left" : "right";
+
   return (
     <div className="relative w-full">
       <div className="card-gradient rounded-2xl p-[2px] transition-[filter]">
         <div
           className={[
-            "rounded-2xl bg-gradient-to-br from-white via-purple-50/60 to-white",
+            "rounded-2xl bg-gradient-to-br from-white via-[rgba(138,92,255,0.06)] to-white",
             "p-6 md:p-7",
-            "ring-1 ring-purple-100 shadow-sm",
+            "ring-1 ring-[rgba(138,92,255,0.15)] shadow-sm",
             "transition-all duration-300 will-change-transform",
-            "hover:-translate-y-1 hover:shadow-2xl hover:ring-purple-300",
+            "hover:-translate-y-1 hover:shadow-2xl hover:ring-[rgba(58,196,236,0.35)]",
           ].join(" ")}
-          style={{
-            textAlign:
-              align === "center"
-                ? "center"
-                : align === "left"
-                ? "left"
-                : "right",
-          }}
+          style={{ textAlign }}
         >
-          <div className="mb-4 flex items-center justify-center">
-            <div className="bg-white/80 p-3 rounded-full ring-1 ring-purple-100 shadow-sm transition">
-              {item.icon}
+          {/* SOLID theme-colored icon (no transparency) */}
+          <div className={`mb-4 flex items-center ${justify}`}>
+            <div className="bg-white size-12 rounded-full grid place-items-center shadow-sm ring-1 ring-black/10">
+              <Icon
+                className="h-6 w-6 text-[color:var(--brand-cyan)]"
+                strokeWidth={2.5}
+              />
             </div>
           </div>
+
           <h4 className="font-semibold text-xl text-slate-900 mb-2">
             {item.title}
           </h4>

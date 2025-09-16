@@ -10,23 +10,18 @@ import StatsSection from "./components/State";
 import TestimonialsSection from "./components/Testimonilas";
 import TalentServicesSection from "./components/Services";
 
-
 export default function Page() {
   return (
     <>
       <Hero />
-     
       <ServicesVSLSection />
       <CallTeamSection />
-       <StatsSection />
-     
-   <TalentServicesSection />
-  
-     
+      <StatsSection />
+      <TalentServicesSection />
       <PredictableGrowthSection />
-       <TestimonialsSection />
-       <ReservationSection />
-         <FaqSection />
+      <TestimonialsSection />
+      <ReservationSection />
+      <FaqSection />
     </>
   );
 }

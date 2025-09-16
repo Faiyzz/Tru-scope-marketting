@@ -4,12 +4,12 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 /* ---------- Types ---------- */
 export type StatItem = {
-  value: number; // final numeric value to count to
-  label: string; // caption under the number
-  suffix?: string; // e.g. "+", "%", "k"
-  decimals?: number; // decimal places (default 0)
-  durationMs?: number; // count-up time (default 1200ms)
-  scrambleMs?: number; // scramble time after count (default 450ms)
+  value: number;
+  label: string;
+  suffix?: string;
+  decimals?: number;
+  durationMs?: number;
+  scrambleMs?: number;
 };
 
 type StatsSectionProps = {
@@ -27,7 +27,6 @@ const formatNumber = (n: number, decimals = 0) =>
   });
 
 const scrambleDigits = (finalText: string) => {
-  // Replace some digits with random ones; keep non-digits (commas, dots) intact
   const randDigit = () => Math.floor(Math.random() * 10).toString();
   return finalText
     .split("")
@@ -61,7 +60,6 @@ function useCountUpScramble(
       if (t < 1) {
         rafId = requestAnimationFrame(animate);
       } else if (!scrambledRef.current) {
-        // scramble phase
         scrambledRef.current = true;
         const finalText = formatNumber(target, decimals);
         const tickMs = 40;
@@ -132,10 +130,7 @@ export default function StatsSection({
       <div className="mx-auto max-w-7xl px-4">
         <ul
           className={[
-            // responsive grid
-            "grid grid-cols-2 gap-y-10",
-            "md:grid-cols-4 md:gap-y-12",
-            // entrance animation for whole row
+            "grid grid-cols-2 gap-y-10 md:grid-cols-4 md:gap-y-12",
             "transition-opacity duration-700 ease-out",
             inView ? "opacity-100" : "opacity-0",
           ].join(" ")}
@@ -145,7 +140,6 @@ export default function StatsSection({
               key={i}
               className={[
                 "flex flex-col items-center text-center",
-                // subtle slide-up per item (stagger with delay)
                 "opacity-0 translate-y-2",
                 inView
                   ? `animate-[fadeUp_700ms_ease-out_forwards] [animation-delay:${
@@ -170,6 +164,27 @@ export default function StatsSection({
 
       {/* Tailwind keyframes (arbitrary variant) */}
       <style jsx>{`
+        :root {
+          /* use your global tokens if present, else fall back */
+          --brand-purple: var(--brand-purple, #8a5cff);
+          --brand-lilac: var(--brand-lilac, #b18cff);
+          --brand-cyan: var(--brand-cyan, #3ac4ec);
+        }
+
+        .text-gradient {
+          background-image: linear-gradient(
+            100deg,
+            var(--brand-purple),
+            var(--brand-lilac),
+            var(--brand-cyan),
+            var(--brand-purple)
+          );
+          background-size: 200% auto;
+          -webkit-background-clip: text;
+          background-clip: text;
+          color: transparent;
+        }
+
         @keyframes fadeUp {
           from {
             opacity: 0;
@@ -209,13 +224,9 @@ function StatBox({
     scrambleMs,
   });
 
-  // gradient number like your screenshot
   const numberEl = useMemo(
     () => (
-      <span
-        className="bg-gradient-to-r from-sky-400 to-violet-500 bg-clip-text text-transparent"
-        aria-hidden="true"
-      >
+      <span className="text-gradient tabular-nums" aria-hidden="true">
         {text}
       </span>
     ),
@@ -225,18 +236,14 @@ function StatBox({
   return (
     <div className="flex flex-col items-center">
       <div
-        className="text-4xl font-extrabold leading-none tracking-tight sm:text-5xl md:text-6xl"
+        className="text-4xl sm:text-5xl md:text-6xl font-extrabold leading-none tracking-tight tabular-nums"
         aria-label={`${text}${suffix ?? ""} ${label}`}
       >
         {numberEl}
-        {suffix ? (
-          <span className="bg-gradient-to-r from-sky-400 to-violet-500 bg-clip-text text-transparent">
-            {suffix}
-          </span>
-        ) : null}
+        {suffix ? <span className="text-gradient">{suffix}</span> : null}
       </div>
 
-      <p className="mt-3 text-sm font-medium text-slate-600 sm:text-base">
+      <p className="mt-3 text-sm sm:text-base font-medium text-slate-600">
         {label}
       </p>
     </div>

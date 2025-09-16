@@ -2,49 +2,19 @@
 "use client";
 
 import Link from "next/link";
-import { useState, FormEvent } from "react";
-import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
-import { motion, AnimatePresence, Variants, easeOut, cubicBezier } from "framer-motion";
+import type { ReactNode } from "react";
+import { motion, Variants, easeOut, cubicBezier } from "framer-motion";
 
 export default function Footer() {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">(
-    "idle"
-  );
-
-  const onSubscribe = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!email) return;
-    setStatus("loading");
-    try {
-      await new Promise((r) => setTimeout(r, 1000)); // mock
-      console.log("Subscribe:", email);
-      setEmail("");
-      setStatus("success");
-      setTimeout(() => setStatus("idle"), 3000);
-    } catch {
-      setStatus("error");
-      setTimeout(() => setStatus("idle"), 3000);
-    }
-  };
-
-  // --- Animation presets (typed) ---
+  // --- Animation presets ---
   const container: Variants = {
     hidden: {},
-    show: {
-      transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-    },
+    show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
   };
-
   const item: Variants = {
     hidden: { opacity: 0, y: 14 },
-    show: {
-      opacity: 1,
-      y: 0,
-      transition: { duration: 0.5, ease: easeOut },
-    },
+    show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } },
   };
-
   const shimmer = {
     initial: { x: "-100%" },
     animate: {
@@ -52,8 +22,8 @@ export default function Footer() {
       transition: {
         duration: 2.4,
         ease: cubicBezier(0, 0, 1, 1),
-        repeat: Infinity,          // OK with Framer types
-        repeatType: "loop",        // optional, explicit loop
+        repeat: Infinity,
+        repeatType: "loop",
       },
     },
   } as const;
@@ -73,6 +43,38 @@ export default function Footer() {
     "Portfolio",
     "Blog",
     "Contact Us",
+  ];
+
+  // Per-icon micro offsets (in px) to nail optical centering
+  const socials = [
+    {
+      name: "Instagram",
+      href: "https://www.instagram.com/tru.scope.marketing/",
+      Icon: InstagramIcon,
+      ox: 0,
+      oy: -0.5,
+    },
+    {
+      name: "Facebook",
+      href: "https://www.facebook.com/profile.php?id=61554888800466",
+      Icon: FacebookIcon,
+      ox: 0.25,
+      oy: -0.5,
+    },
+    {
+      name: "TikTok",
+      href: "https://www.tiktok.com/@truscope.us?is_from_webapp=1&sender_device=pc",
+      Icon: TiktokIcon,
+      ox: 0,
+      oy: -0.5,
+    },
+    {
+      name: "YouTube",
+      href: "https://youtube.com/@truscope?feature=shared",
+      Icon: YoutubeIcon,
+      ox: 0.25,
+      oy: -0.25,
+    },
   ];
 
   return (
@@ -104,7 +106,7 @@ export default function Footer() {
       />
 
       <div className="relative mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
-        {/* Top grid with staggered reveal */}
+        {/* Top grid */}
         <motion.div
           variants={container}
           initial="hidden"
@@ -164,64 +166,22 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* Newsletter */}
+          {/* Social (own column so it aligns with the other headings) */}
           <motion.div variants={item}>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
-              Join a Newsletter
+              Social
             </h4>
-            <form onSubmit={onSubscribe} className="mt-4">
-              <label
-                htmlFor="email"
-                className="mb-2 block text-xs text-slate-400"
-              >
-                Your Email
-              </label>
-
-              <div className="group relative flex gap-3">
-                <input
-                  id="email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Your Email"
-                  className="w-full rounded-md border border-white/10 bg-[#1F2740] px-3 py-2 text-sm text-slate-100 placeholder:text-slate-400 outline-none transition focus:ring-2 focus:ring-indigo-500"
-                />
-                <button
-                  type="submit"
-                  disabled={status === "loading"}
-                  className="inline-flex items-center rounded-md bg-indigo-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-80"
-                >
-                  {status === "loading" ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Subscribing…
-                    </>
-                  ) : (
-                    "Subscribe"
-                  )}
-                </button>
-
-                {/* Tiny success/error toast anchored to the form */}
-                <AnimatePresence>
-                  {status !== "idle" && status !== "loading" && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 8 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 8 }}
-                      className={`pointer-events-none absolute -bottom-8 left-0 text-xs ${status === "success"
-                          ? "text-emerald-400"
-                          : "text-rose-400"
-                        }`}
-                    >
-                      {status === "success"
-                        ? "You're in! Check your inbox."
-                        : "Something went wrong. Try again."}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            </form>
+            <div className="mt-4">
+              <ul className="flex flex-wrap items-center gap-3">
+                {socials.map(({ name, href, Icon, ox, oy }) => (
+                  <li key={name}>
+                    <SocialButton href={href} label={name} ox={ox} oy={oy}>
+                      <Icon />
+                    </SocialButton>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </motion.div>
         </motion.div>
 
@@ -234,40 +194,140 @@ export default function Footer() {
           />
         </div>
 
-        {/* Bottom bar */}
+        {/* Bottom bar (centered) */}
         <motion.div
           variants={container}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.35 }}
-          className="mt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+          className="mt-6 flex flex-col items-center gap-2"
         >
-          <motion.p variants={item} className="text-xs text-slate-500">
+          <motion.p
+            variants={item}
+            className="text-xs text-slate-500 text-center"
+          >
             © 2025 TruScope. All rights reserved.
           </motion.p>
-
-          <motion.div
-            variants={item}
-            className="flex flex-wrap items-center gap-6 text-sm"
-          >
-            <span className="flex items-center gap-2 text-slate-400">
-              <MapPin className="h-4 w-4" /> 8819 Ohio St. South Gate, CA 90280
-            </span>
-            <a
-              href="mailto:Ourstudio@hello.com"
-              className="flex items-center gap-2 text-slate-400 transition hover:text-white"
-            >
-              <Mail className="h-4 w-4" /> Ourstudio@hello.com
-            </a>
-            <a
-              href="tel:+13866883295"
-              className="flex items-center gap-2 text-slate-400 transition hover:text-white"
-            >
-              <Phone className="h-4 w-4" /> +1 386-688-3295
-            </a>
-          </motion.div>
         </motion.div>
       </div>
     </footer>
+  );
+}
+
+/* ---------- Button wrapper that centers any SVG; no gradients so icons stay visible ---------- */
+function SocialButton({
+  href,
+  label,
+  children,
+  ox = 0,
+  oy = 0,
+}: {
+  href: string;
+  label: string;
+  children: ReactNode;
+  ox?: number;
+  oy?: number;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="group grid h-10 w-10 place-items-center rounded-full text-white bg-white/10 ring-1 ring-white/15 transition-transform duration-200 hover:scale-105 hover:bg-white/15 hover:ring-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+    >
+      <span
+        className="pointer-events-none block"
+        style={{
+          width: 20,
+          height: 20,
+          transform: `translate(${ox}px, ${oy}px)`,
+        }}
+      >
+        {children}
+      </span>
+    </a>
+  );
+}
+
+/* ---------- Simple SVG icons (use currentColor so they inherit button color) ---------- */
+function InstagramIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      width="20"
+      height="20"
+      aria-hidden="true"
+    >
+      <rect
+        x="3"
+        y="3"
+        width="18"
+        height="18"
+        rx="5"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <circle cx="12" cy="12" r="4" stroke="currentColor" strokeWidth="2" />
+      <circle cx="17.5" cy="6.8" r="1.3" fill="currentColor" />
+    </svg>
+  );
+}
+function FacebookIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      width="20"
+      height="20"
+      aria-hidden="true"
+    >
+      <path
+        d="M15 8h-2a1 1 0 0 0-1 1v2h3l-.7 3H12v6H9v-6H7v-3h2v-1.5A3.5 3.5 0 0 1 12.5 5H15v3z"
+        fill="currentColor"
+      />
+    </svg>
+  );
+}
+function TiktokIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      width="20"
+      height="20"
+      aria-hidden="true"
+    >
+      <path
+        d="M14 4v5.5c0 3.6-2.9 4.2-4.2 3.8a3.2 3.2 0 1 0 3.2 3.2V6.2l5.5 1.8v3.3c1.6 1 3 1.5 4.5 1.7"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+function YoutubeIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      width="20"
+      height="20"
+      aria-hidden="true"
+    >
+      <rect
+        x="3"
+        y="7"
+        width="18"
+        height="10"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="2"
+      />
+      <path d="M11 10l4 3-4 3v-6z" fill="currentColor" />
+    </svg>
   );
 }

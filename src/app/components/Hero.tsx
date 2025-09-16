@@ -1,26 +1,106 @@
 "use client";
 
-import Image from "next/image";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants, easeOut } from "framer-motion";
 import { ArrowRight, PhoneCall } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useRef } from "react";
+
+/* --- tiny util: hover-to-play video --- */
+function HoverVideo({
+  src,
+  poster,
+  className = "",
+}: {
+  src: string;
+  poster?: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+  const play = () => ref.current?.play();
+  const stop = () => {
+    if (!ref.current) return;
+    ref.current.pause();
+    ref.current.currentTime = 0;
+  };
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster}
+      muted
+      playsInline
+      loop
+      preload="metadata"
+      onMouseEnter={play}
+      onMouseLeave={stop}
+      className={`absolute inset-0 h-full w-full object-cover ${className}`}
+    />
+  );
+}
+
+/* --- animation presets (staggered load-in) --- */
+const ease = [0.22, 1, 0.36, 1] as const;
+
+const sectionEnter: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.65, ease },
+  },
+  exit: { opacity: 0, y: -24, transition: { duration: 0.35, ease } },
+};
+
+const textGroup: Variants = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
+  },
+};
+
+const textItem: Variants = {
+  hidden: { opacity: 0, y: 12 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.55, ease: easeOut } },
+};
+
+const cardsGroup: Variants = {
+  hidden: {},
+  show: {
+    transition: { staggerChildren: 0.15, delayChildren: 0.25 },
+  },
+};
+
+const cardItem: Variants = {
+  hidden: (custom: number = 0) => ({
+    opacity: 0,
+    y: 16,
+    scale: 0.96,
+    rotate: custom, // keep each card's tilt while hidden
+  }),
+  show: (custom: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    rotate: custom,
+    transition: { duration: 0.6, ease },
+  }),
+};
 
 export default function Hero() {
-  const ease = [0.22, 1, 0.36, 1] as const;
-
   return (
     <AnimatePresence mode="wait">
       <motion.section
         role="banner"
         aria-label="Crafting stories that connect and inspire"
-        className="relative isolate overflow-hidden bg-white text-gray-900 min-h-screen"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: 1, y: 0, transition: { duration: 0.65, ease } }}
-        exit={{ opacity: 0, y: -24, transition: { duration: 0.35, ease } }}
+        className="hero relative isolate overflow-hidden bg-white text-gray-900 min-h-screen"
+        variants={sectionEnter}
+        initial="hidden"
+        animate="show"
+        exit="exit"
       >
         {/* BG 1: Curve */}
-        <div className="absolute inset-0 -z-50">
+        <div className="absolute inset-0 -z-50 ">
           <div className="curve-pos absolute inset-0">
             <Image
               src="/images/curve.png"
@@ -40,158 +120,215 @@ export default function Hero() {
           <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_12%_12%,rgba(138,92,255,0.18),transparent_60%)]" />
         </div>
 
-        {/* Blob – desktop/tablet only, pulled in from the corner */}
-        <div
-          aria-hidden
-          className="hidden md:block absolute -z-30 select-none"
-          /* new placement */
-          style={{ left: "clamp(12px, 4vw, 72px)", bottom: "clamp(24px, 6vh, 96px)" }}
-        >
-          <Image
-            src="/images/blob.jpg"
-            alt=""
-            width={300}
-            height={300}
-            className="rounded-full opacity-95 w-44 h-44 lg:w-56 lg:h-56 object-cover ring-2 ring-white/60 shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
-            priority
-          />
-        </div>
-
-        {/* CONTENT WRAPPER — centers vertically */}
-        <div className="relative flex min-h-[82vh] items-center">
+        {/* CONTENT WRAPPER — extra top padding for fixed navbar */}
+        <div className="relative flex min-h-[82vh] items-center pt-[clamp(88px,10vh,128px)]">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 py-8 md:py-10 lg:py-12 md:place-items-center">
-              {/* LEFT */}
-              <header className="max-w-2xl mx-auto text-center md:text-left">
-                {/* improved, bigger hook */}
-             <h1 className="tracking-tight">
-  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.05]">
-    Content that <span className="text-shine bg-clip-text text-transparent">Scales</span>
-  </span>
-  <span className="mt-3 block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold">
-    Growth that <span className="text-shine bg-clip-text text-transparent">Lasts</span>
-  </span>
-</h1>
+              {/* LEFT (staggered text) */}
+              <motion.header
+                className="max-w-2xl mx-auto text-center md:text-left"
+                variants={textGroup}
+                initial="hidden"
+                animate="show"
+              >
+                <motion.h1 className="tracking-tight" variants={textItem}>
+                  <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-semibold leading-[1.05]">
+                    Content that{" "}
+                    <span className="text-shine bg-clip-text text-transparent">
+                      Scales
+                    </span>
+                  </span>
+                  <span className="mt-3 block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold">
+                    Growth that{" "}
+                    <span className="text-shine bg-clip-text text-transparent">
+                      Lasts
+                    </span>
+                  </span>
+                </motion.h1>
 
-                <p className="mt-5 text-base sm:text-lg md:text-xl text-gray-700/90">
+                <motion.p
+                  className="mt-5 text-base sm:text-lg md:text-xl text-gray-700/90"
+                  variants={textItem}
+                >
                   Turning ideas into impactful digital experiences.
-                </p>
+                </motion.p>
 
-                <p className="mt-4 text-[0.95rem] leading-7 text-gray-700 max-w-prose mx-auto md:mx-0">
-                  We help brands and creators bring their vision to life through captivating content,
-                  innovative storytelling, and design that leaves a lasting impression.
-                </p>
+                <motion.p
+                  className="mt-4 text-[0.95rem] leading-7 text-gray-700 max-w-prose mx-auto md:mx-0"
+                  variants={textItem}
+                >
+                  We help brands and creators bring their vision to life through
+                  captivating content, innovative storytelling, and design that
+                  leaves a lasting impression.
+                </motion.p>
 
                 {/* Buttons */}
-                <nav className="mt-7 flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-3">
+                <motion.nav
+                  className="mt-7 flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-3"
+                  variants={textItem}
+                >
                   <Link
                     href="#book"
                     aria-label="Book a free call"
-                    className="inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-2.5 text-sm font-semibold text-white bg-[#3ac4ec] hover:bg-[#2ea5c8] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#3ac4ec]/40 transition"
+                    className="btn-base btn-gradient text-white shadow-md hover:shadow-lg"
                   >
-                    <PhoneCall className="size-4" />
+                    <PhoneCall className="size-4 shrink-0" />
                     Book Free Call
                   </Link>
+
                   <Link
                     href="#services"
                     aria-label="Explore our services"
-                    className="inline-flex items-center gap-2 rounded-full px-4 sm:px-5 py-2.5 text-sm font-semibold text-gray-900 bg-white/90 backdrop-blur ring-1 ring-[#3ac4ec]/30 hover:bg-white transition"
+                    className="btn-base btn-gradient-outline bg-white/90 backdrop-blur"
                   >
-                    Explore Our Services
-                    <ArrowRight className="size-4" />
+                    <span className="text-gradient">Explore Our Services</span>
+                    <ArrowRight className="size-4 shrink-0" />
                   </Link>
-                </nav>
-              </header>
+                </motion.nav>
+              </motion.header>
 
-              {/* RIGHT (unchanged on mobile) */}
+              {/* RIGHT (cards enter one-by-one: left -> right -> center) */}
               <figure aria-hidden className="w-full">
-                {/* MOBILE: simple centered row (no overlap) */}
-                <div className="md:hidden flex items-center justify-center gap-3 pt-4">
-                  <div className="device-frame">
-                    <div className="device-m">
-                      <Image src="/images/web.jpg" alt="Editing interface" fill className="media" />
+                {/* MOBILE row */}
+                <motion.div
+                  className="md:hidden flex items-center justify-center gap-3 pt-4"
+                  variants={cardsGroup}
+                  initial="hidden"
+                  animate="show"
+                >
+                  <motion.div
+                    variants={cardItem}
+                    custom={-4}
+                    className="device-frame"
+                  >
+                    <div className="device-m relative">
+                      <HoverVideo
+                        src="/videos/v1.mp4"
+                        poster="/images/web.jpg"
+                      />
                     </div>
-                  </div>
-                  <div className="device-frame">
-                    <div className="device-m">
-                      <Image src="/images/edit.jpg" alt="Studio monitors" fill className="media" />
-                    </div>
-                  </div>
-                  <div className="device-frame">
-                    <div className="device-m">
-                      <Image src="/images/seo.jpg" alt="Creator at work" fill className="media" />
-                    </div>
-                  </div>
-                </div>
+                  </motion.div>
 
-                {/* DESKTOP/TABLET: overlapped stack */}
-                <div className="hidden md:block relative mx-auto h-[360px] lg:h-[440px]">
+                  <motion.div
+                    variants={cardItem}
+                    custom={0}
+                    className="device-frame"
+                  >
+                    <div className="device-m relative">
+                      <HoverVideo
+                        src="/videos/v2.mp4"
+                        poster="/images/edit.jpg"
+                      />
+                    </div>
+                  </motion.div>
+
+                  <motion.div
+                    variants={cardItem}
+                    custom={4}
+                    className="device-frame"
+                  >
+                    <div className="device-m relative">
+                      <HoverVideo
+                        src="/videos/v3.mp4"
+                        poster="/images/seo.jpg"
+                      />
+                    </div>
+                  </motion.div>
+                </motion.div>
+
+                {/* DESKTOP/TABLET stack */}
+                <motion.div
+                  className="hidden md:block relative mx-auto h-[360px] lg:h-[440px]"
+                  variants={cardsGroup}
+                  initial="hidden"
+                  animate="show"
+                >
                   {/* left card */}
                   <motion.div
-                    initial={{ opacity: 0, y: 12, rotate: -6, scale: 0.94 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      rotate: -8,
-                      scale: 1,
-                      transition: { duration: 0.7, ease, delay: 0.15 },
-                    }}
+                    variants={cardItem}
+                    custom={-8}
                     className="absolute left-6 lg:left-10 top-2 rotate-[-8deg] device-frame float-soft z-10"
                   >
-                    <div className="device">
-                      <Image src="/images/web.jpg" alt="Editing interface" fill className="media" priority />
+                    <div className="device relative">
+                      <HoverVideo
+                        src="/videos/v1.mp4"
+                        poster="/images/web.jpg"
+                      />
                     </div>
                   </motion.div>
 
-                  {/* right card – pulled closer */}
+                  {/* right card */}
                   <motion.div
-                    initial={{ opacity: 0, y: 16, rotate: 6, scale: 0.94 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      rotate: 8,
-                      scale: 1,
-                      transition: { duration: 0.7, ease, delay: 0.25 },
-                    }}
+                    variants={cardItem}
+                    custom={8}
                     className="absolute right-6 lg:right-10 top-1 rotate-[8deg] device-frame float-soft z-10"
                   >
-                    <div className="device">
-                      <Image src="/images/edit.jpg" alt="Creator at work" fill className="media" priority />
+                    <div className="device relative">
+                      <HoverVideo
+                        src="/videos/v2.mp4"
+                        poster="/images/edit.jpg"
+                      />
                     </div>
                   </motion.div>
 
-                  {/* center card on top */}
+                  {/* center card (last) */}
                   <motion.div
-                    initial={{ opacity: 0, y: 16, scale: 0.93 }}
-                    animate={{
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                      transition: { duration: 0.7, ease, delay: 0.35 },
-                    }}
+                    variants={cardItem}
+                    custom={0}
                     className="absolute left-1/2 -translate-x-1/2 top-8 device-frame ring-2 ring-white/50 shadow-xl z-20"
                   >
-                    <div className="device">
-                      <Image src="/images/seo.jpg" alt="Studio monitors" fill className="media" priority />
+                    <div className="device relative">
+                      <HoverVideo
+                        src="/videos/v3.mp4"
+                        poster="/images/seo.jpg"
+                      />
                     </div>
                   </motion.div>
-                </div>
+                </motion.div>
               </figure>
             </div>
           </div>
         </div>
 
         <style jsx global>{`
+          :root {
+            --brand-purple: #8a5cff;
+            --brand-lilac: #b18cff;
+            --brand-cyan: #3ac4ec;
+          }
+
+          /* Equal-height button base */
+          .btn-base {
+            height: 44px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-inline: 1.25rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            line-height: 1;
+          }
+          @media (min-width: 640px) {
+            .btn-base {
+              padding-inline: 1.375rem;
+            }
+          }
+
+          /* Animated gradient text for SCALES / LASTS */
           .text-shine {
             background-image: linear-gradient(
               100deg,
-              #8a5cff 8%,
-              #b18cff 28%,
-              #3ac4ec 58%,
-              #8a5cff 86%
+              var(--brand-purple) 8%,
+              var(--brand-lilac) 28%,
+              var(--brand-cyan) 58%,
+              var(--brand-purple) 86%
             );
             background-size: 200% auto;
             animation: shine 2.6s linear infinite;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
           }
           @keyframes shine {
             to {
@@ -199,6 +336,68 @@ export default function Hero() {
             }
           }
 
+          /* Buttons: gradient fill */
+          .btn-gradient {
+            background-image: linear-gradient(
+              100deg,
+              var(--brand-purple) 0%,
+              var(--brand-lilac) 35%,
+              var(--brand-cyan) 70%,
+              var(--brand-purple) 100%
+            );
+            background-size: 200% auto;
+            transition: background-position 0.6s ease, box-shadow 0.25s ease,
+              transform 0.12s ease;
+          }
+          .btn-gradient:hover {
+            background-position: 100% center;
+          }
+          .btn-gradient:active {
+            transform: translateY(1px);
+          }
+
+          /* Buttons: gradient outline */
+          .btn-gradient-outline {
+            position: relative;
+            color: #111;
+            isolation: isolate;
+          }
+          .btn-gradient-outline::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: 9999px;
+            padding: 1px; /* border thickness */
+            background-image: linear-gradient(
+              100deg,
+              var(--brand-purple) 0%,
+              var(--brand-lilac) 35%,
+              var(--brand-cyan) 70%,
+              var(--brand-purple) 100%
+            );
+            -webkit-mask: linear-gradient(#fff 0 0) content-box,
+              linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            z-index: -1;
+          }
+
+          /* Optional gradient label for outline buttons */
+          .text-gradient {
+            background-image: linear-gradient(
+              100deg,
+              var(--brand-purple),
+              var(--brand-lilac),
+              var(--brand-cyan),
+              var(--brand-purple)
+            );
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+          }
+
+          /* Float animation for the device cards */
           .float-soft {
             animation: float 6s ease-in-out infinite;
           }
@@ -212,6 +411,7 @@ export default function Hero() {
             }
           }
 
+          /* Glass frame + device sizes */
           .device-frame {
             padding: 6px;
             border-radius: 1.4rem;
@@ -224,7 +424,6 @@ export default function Hero() {
               inset 0 1px 1px rgba(255, 255, 255, 0.35);
             backdrop-filter: blur(3px);
           }
-
           .device {
             --device-ar: 9 / 19;
             position: relative;
@@ -241,14 +440,9 @@ export default function Hero() {
             overflow: hidden;
           }
 
-          .media {
-            object-fit: cover;
-            object-position: center;
-          }
-
-          /* Curve positioning */
+          /* Curve positioning (smooth across sizes & 150% zoom) */
           .hero {
-            --curve-x: -2vw;
+            --curve-x: 2vw;
             --curve-y: -1vh;
             --curve-scale: 1;
           }
@@ -259,20 +453,29 @@ export default function Hero() {
           }
           @media (min-width: 640px) {
             .hero {
-              --curve-x: -3vw;
+              --curve-x: 6vw;
               --curve-y: -1vh;
             }
           }
           @media (min-width: 1024px) {
             .hero {
-              --curve-x: 19vw;
+              --curve-x: 18vw;
               --curve-y: -3vh;
+              --curve-scale: 1.04;
+            }
+          }
+          @media (min-width: 1280px) {
+            .hero {
+              --curve-x: 14vw;
+              --curve-y: -2vh;
+              --curve-scale: 1;
             }
           }
           @media (min-width: 1536px) {
             .hero {
-              --curve-x: 19vw;
-              --curve-y: -3vh;
+              --curve-x: 0vw;
+              --curve-y: -5vh;
+              --curve-scale: 1;
             }
           }
         `}</style>
