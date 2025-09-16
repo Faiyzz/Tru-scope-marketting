@@ -102,11 +102,11 @@ export default function PredictableGrowthSection({
 
   /* ---- scroll progress + in-view ---- */
   const sectionRef = React.useRef<HTMLElement | null>(null);
-  const railWrapRef = React.useRef<HTMLDivElement | null>(null); // only wraps the steps (not CTA)
+  const railWrapRef = React.useRef<HTMLDivElement | null>(null);
   const metricsRef = React.useRef<HTMLDivElement | null>(null);
 
   const { scrollYProgress } = useScroll({
-    target: railWrapRef, // ✅ rail only measures the steps container
+    target: railWrapRef,
     offset: ["start 0.8", "end 0.2"],
   });
 
@@ -138,13 +138,6 @@ export default function PredictableGrowthSection({
         style={{ contain: "paint" }}
       >
         <motion.div
-          className="absolute -top-24 -left-24 h-[26rem] w-[26rem] rounded-full blur-3xl"
-          style={{
-            background: `radial-gradient(60% 60% at 50% 50%, ${GRAD_FROM} 0%, ${GRAD_TO} 40%, transparent 70%)`,
-            opacity: 0.7,
-          }}
-        />
-        <motion.div
           className="absolute -bottom-20 -right-20 h-[24rem] w-[24rem] rounded-full blur-3xl"
           style={{
             background:
@@ -155,7 +148,7 @@ export default function PredictableGrowthSection({
       </div>
 
       <div className="relative mx-auto max-w-6xl px-6 py-14 md:py-16 lg:px-8">
-        {/* Heading — tightened spacing + size */}
+        {/* Heading — centered; last word solid accent */}
         <motion.header
           variants={container}
           initial="hidden"
@@ -165,9 +158,9 @@ export default function PredictableGrowthSection({
         >
           <motion.h2
             variants={item}
-            className="mt-1 text-gradient font-extrabold leading-[0.98] tracking-tight text-[clamp(28px,6vw,56px)]"
+            className="mt-1 font-extrabold leading-[0.98] tracking-tight text-[clamp(28px,6vw,56px)] text-slate-900"
           >
-            {title}
+            {renderSolidAccentLastWord(title)}
           </motion.h2>
 
           <motion.p
@@ -178,25 +171,26 @@ export default function PredictableGrowthSection({
           </motion.p>
         </motion.header>
 
-        {/* Metrics band */}
+        {/* Metrics band — centered block + centered content */}
         <motion.div
           ref={metricsRef}
           variants={container}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, amount: 0.35 }}
-          className="mt-8 overflow-hidden rounded-2xl border border-[rgba(58,196,236,0.2)] bg-[linear-gradient(135deg,rgba(58,196,236,0.10),rgba(31,159,192,0.08))] p-4 sm:p-5"
+          className="mt-8 mx-auto max-w-5xl overflow-hidden rounded-2xl border border-[rgba(58,196,236,0.2)]
+                     bg-[linear-gradient(135deg,rgba(58,196,236,0.10),rgba(31,159,192,0.08))] p-5 sm:p-6 text-center"
         >
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 justify-items-center">
             {loading
               ? SKELETON_METRICS.map((i) => (
                   <motion.div
                     key={`metric-skel-${i}`}
                     variants={item}
-                    className="space-y-1"
+                    className="space-y-1 w-full"
                   >
-                    {shimmerBlock(40, 20)}
-                    <div className="text-xs font-medium text-slate-700 sm:text-sm">
+                    {shimmerBlock(40, 22)}
+                    <div className="text-xs font-medium text-slate-700 sm:text-sm flex justify-center">
                       {shimmerLine(60, 100)}
                     </div>
                   </motion.div>
@@ -208,7 +202,7 @@ export default function PredictableGrowthSection({
                     className="space-y-1"
                   >
                     <div className="text-3xl sm:text-4xl font-extrabold tracking-tight">
-                      <span className="tabular-nums text-gradient">
+                      <span className="tabular-nums text-gradient inline-flex items-baseline">
                         <CountUp
                           end={m.value}
                           duration={900 + i * 120}
@@ -229,15 +223,14 @@ export default function PredictableGrowthSection({
         <div className="mt-10 grid grid-cols-1 gap-8 md:mt-12 md:grid-cols-12">
           {/* LEFT: Steps with progress rail */}
           <div className="md:col-span-7">
-            {/* ✅ This wrapper only includes the steps; rail stops at step #5 */}
             <div
               ref={railWrapRef}
               className="relative overflow-hidden md:overflow-visible pb-1"
             >
-              {/* Rail base + fill (theme gradient) */}
-              <div className="absolute left-5 top-0 hidden h-full w-[3px] -translate-x-1/2 rounded rail-base md:block" />
+              {/* Rail base + fill moved slightly right */}
+              <div className="absolute left-7 top-0 hidden h-full w-[3px] -translate-x-1/2 rounded rail-base md:block" />
               <motion.div
-                className="absolute left-5 top-0 hidden w-[3px] -translate-x-1/2 rounded rail-fill md:block"
+                className="absolute left-7 top-0 hidden w-[3px] -translate-x-1/2 rounded rail-fill md:block"
                 style={{ height: fillY }}
               />
 
@@ -250,9 +243,9 @@ export default function PredictableGrowthSection({
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.35 }}
-                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:pl-16"
+                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:pl-20"
                       >
-                        <div className="pointer-events-none absolute left-5 top-5 hidden -translate-x-1/2 md:block">
+                        <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
                           <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
                             <span className="text-sm font-bold text-white">
                               {i + 1}
@@ -274,9 +267,9 @@ export default function PredictableGrowthSection({
                         initial="hidden"
                         whileInView="show"
                         viewport={{ once: true, amount: 0.35 }}
-                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-16"
+                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-20"
                       >
-                        <div className="pointer-events-none absolute left-5 top-5 hidden -translate-x-1/2 md:block">
+                        <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
                           <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
                             <span className="text-sm font-bold text-white">
                               {s.id}
@@ -388,7 +381,7 @@ export default function PredictableGrowthSection({
           --brand-cyan: var(--brand-cyan, #3ac4ec);
         }
 
-        /* gradient text (numbers + heading) */
+        /* gradient text (numbers only) */
         .text-gradient {
           background-image: linear-gradient(
             100deg,
@@ -403,7 +396,7 @@ export default function PredictableGrowthSection({
           color: transparent;
         }
 
-        /* shared button base + gradient fill (same as hero/nav) */
+        /* shared button base + gradient fill */
         .btn-base {
           height: 44px;
           display: inline-flex;
@@ -471,6 +464,18 @@ export default function PredictableGrowthSection({
 }
 
 /* ---------------- Bits ---------------- */
+
+function renderSolidAccentLastWord(raw: string) {
+  const parts = raw.trim().split(/\s+/);
+  const last = parts.pop() ?? "";
+  const before = parts.join(" ");
+  return (
+    <>
+      {before} {""}
+      <span style={{ color: "var(--brand-purple, #8A5CFF)" }}>{last}</span>
+    </>
+  );
+}
 
 function CheckIcon() {
   return (

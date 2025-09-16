@@ -138,7 +138,7 @@ export default function Hero() {
                       Scales
                     </span>
                   </span>
-                  <span className="mt-3 block text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-semibold">
+                  <span className="mt-1 block text-4xl sm:text-4xl md:text-x6l lg:text-7xl font-semibold">
                     Growth that{" "}
                     <span className="text-shine bg-clip-text text-transparent">
                       Lasts

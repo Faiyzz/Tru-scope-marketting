@@ -39,6 +39,9 @@ const SERVICES: Service[] = [
   },
 ];
 
+// Accent matches the heading's last word color
+const ACCENT = "#8A5CFF";
+
 // Reuse the same gradient everywhere (no styled-jsx)
 const GRADIENT = "linear-gradient(100deg,#8a5cff,#b18cff,#3ac4ec,#8a5cff)";
 
@@ -67,21 +70,15 @@ export default function ServicesSection(): ReactElement {
     >
       <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
         <header className="mx-auto max-w-3xl text-center">
-          {/* Animated gradient heading via Framer Motion (no keyframes needed) */}
-          <motion.h2
+          <motion.h1
             id="services-heading"
-            className="text-3xl font-semibold tracking-tight sm:text-4xl bg-clip-text text-transparent"
-            style={{
-              backgroundImage: GRADIENT,
-              backgroundSize: "200% auto",
-              backgroundPosition: "0% center",
-            }}
-            initial={{ backgroundPosition: "0% center" }}
-            animate={{ backgroundPosition: "200% center" }}
-            transition={{ duration: 6, ease: "linear", repeat: Infinity }}
+            className="text-center font-extrabold tracking-tight leading-[0.98] text-[clamp(28px,6vw,56px)] text-slate-900"
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, ease: "easeOut" }}
           >
-            Services
-          </motion.h2>
+            Our <span className="text-[#8A5CFF]">Services</span>
+          </motion.h1>
 
           <p className="mt-4 text-base text-gray-600">
             Creative and technical execution with a focus on clarity, speed, and
@@ -102,29 +99,14 @@ export default function ServicesSection(): ReactElement {
               variants={cardVariants}
               whileHover={{ scale: 1.03, y: -6 }}
               whileTap={{ scale: 0.99 }}
-              className="group relative flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6
+              className="group relative flex h-full flex-col rounded-2xl border border-[#8A5CFF]/30 bg-white p-6
                          shadow-[0_8px_30px_rgba(2,6,23,0.06)] transition-all will-change-transform
-                         hover:shadow-[0_18px_50px_rgba(2,6,23,0.12)]"
+                         hover:border-[#8A5CFF] hover:shadow-[0_18px_50px_rgba(2,6,23,0.12)]"
             >
-              {/* Gradient top bar */}
-              <motion.span
-                aria-hidden
-                className="absolute inset-x-0 top-0 h-1.5 rounded-t-2xl"
-                style={{
-                  backgroundImage: GRADIENT,
-                  backgroundSize: "200% auto",
-                  backgroundPosition: "0% center",
-                  clipPath: "inset(0 round 1rem 1rem 0 0)",
-                }}
-                whileHover={{ backgroundPosition: "100% center" }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              />
-
               {/* Icon chip */}
               <motion.div
                 aria-hidden
-                className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl text-white
-                           shadow-sm ring-1 ring-black/5"
+                className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-sm ring-1 ring-black/5"
                 style={{
                   backgroundImage: GRADIENT,
                   backgroundSize: "200% auto",
@@ -163,8 +145,8 @@ export default function ServicesSection(): ReactElement {
                 Learn More
               </motion.a>
 
-              {/* Focus ring */}
-              <span className="pointer-events-none absolute inset-0 rounded-2xl ring-0 transition group-focus-within:ring-2 group-focus-within:ring-[#3ac4ec]" />
+              {/* Focus ring (matched to accent) */}
+              <span className="pointer-events-none absolute inset-0 rounded-2xl ring-0 transition group-focus-within:ring-2 group-focus-within:ring-[#8A5CFF]" />
             </motion.article>
           ))}
         </motion.div>

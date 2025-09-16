@@ -72,10 +72,11 @@ export default function FAQSection() {
           viewport={{ once: true }}
           transition={{ delay: 0.05 }}
         >
-          <h2 className="font-extrabold tracking-tight text-gray-900 leading-[0.98] text-[clamp(28px,6vw,56px)]">
-            Frequently Asked <span className="text-gradient">Questions</span>
+          <h2 className="font-extrabold tracking-tight text-gray-900 leading-[0.98] text-[clamp(28px,6vw,56px)] text-center">
+            Frequently Asked <span className="text-[#8A5CFF]">Questions</span>
           </h2>
-          <p className="mt-3 text-gray-500 italic text-pretty">
+
+          <p className="mt-3 text-gray-500 italic text-center">
             Everything you need to know about working with us
           </p>
         </motion.header>

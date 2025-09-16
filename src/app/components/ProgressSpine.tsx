@@ -3,17 +3,9 @@
 import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import {
-  Target,
-  PenSquare,
-  Camera,
-  Scissors,
-  Image as ImageIcon,
-  BarChart3,
-  MessageSquare,
-} from "lucide-react";
+import { Target, Camera, Scissors, BarChart3 } from "lucide-react";
 
-/* --------- Steps (studio-only) --------- */
+/* --------- Condensed steps (4 cards) --------- */
 type Feature = {
   title: string;
   desc: string;
@@ -21,48 +13,30 @@ type Feature = {
   side: "left" | "right";
 };
 
-const features: Feature[] = [
+const FEATURES: Feature[] = [
   {
     title: "Strategy & Pillars",
-    desc: "ICP research, content pillars, and a monthly plan aligned to outcomes.",
+    desc: "ICP research, content pillars, and a monthly roadmap aligned to outcomes. Hooks, outlines, scripts, and shot lists included.",
     Icon: Target,
     side: "left",
   },
   {
-    title: "Pre-Production & Scripting",
-    desc: "Hooks, outlines, scripts, and shot lists so recording runs fast.",
-    Icon: PenSquare,
-    side: "right",
-  },
-  {
-    title: "Record & Upload (No On-Site Filming)",
-    desc: "You record on your phone/camera using our guides. Upload raw takes to a shared Google Drive.",
+    title: "Record & Collaborate",
+    desc: "You record on your phone/camera using our guides, upload to Drive, and collaborate via private Slack + shared Notion dashboard.",
     Icon: Camera,
-    side: "left",
-  },
-  {
-    title: "Collaboration (Slack + Notion)",
-    desc: "Private Slack for communication. Notion dashboard for calendar, briefs, approvals, and assets.",
-    Icon: MessageSquare,
     side: "right",
   },
   {
-    title: "Editing & Motion",
-    desc: "Cuts, pacing, sound design, captions, and tasteful motion graphics.",
+    title: "Editing & Thumbnails",
+    desc: "Cuts, pacing, sound design, captions, tasteful motion graphics — plus scroll-stopping thumbnails and covers to lift CTR.",
     Icon: Scissors,
     side: "left",
   },
   {
-    title: "Thumbnails & Covers",
-    desc: "Scroll-stopping graphics and on-brand visuals to lift CTR.",
-    Icon: ImageIcon,
-    side: "right",
-  },
-  {
     title: "Posting & Analytics",
-    desc: "Platform-aware posting, calendar scheduling, and weekly iteration.",
+    desc: "Platform-aware posting, calendar scheduling, transparent reporting, and weekly iteration to scale what works.",
     Icon: BarChart3,
-    side: "left",
+    side: "right",
   },
 ];
 
@@ -76,7 +50,7 @@ export default function CallTeamSection() {
     offset: ["start center", "end center"],
   });
 
-  // Measure actual travel: spine wrapper height - highlight height
+  // Measure travel for the highlight
   const [travel, setTravel] = React.useState(0);
   React.useLayoutEffect(() => {
     const calc = () => {
@@ -126,8 +100,8 @@ export default function CallTeamSection() {
           transition={{ duration: 0.8 }}
           viewport={{ once: true }}
         >
-          <h2 className="text-5xl font-bold text-slate-900 mb-4 pb-8">
-            Done-for-You Content Studio
+          <h2 className="text-center font-extrabold tracking-tight leading-[0.98] text-[clamp(28px,6vw,56px)] text-slate-900 mb-4 pb-2">
+            {renderSolidAccentLastWord("Done-for-You Content Studio")}
           </h2>
           <p className="text-lg text-slate-600 max-w-3xl mx-auto">
             Strategy → Recording → Editing → Distribution. No on-site filming.
@@ -138,16 +112,13 @@ export default function CallTeamSection() {
 
         {/* Timeline area */}
         <div ref={spineWrapRef} className="relative">
-          {/* Base vertical spine (true full height) */}
+          {/* Base vertical spine */}
           <div
             className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 z-0 rounded-full"
-            style={{
-              width: spineW,
-              backgroundColor: "rgb(226 232 240)",
-            }} /* slate-200 */
+            style={{ width: spineW, backgroundColor: "rgb(226 232 240)" }} // slate-200
           />
 
-          {/* Scroll highlight — same behavior, themed color */}
+          {/* Scroll highlight */}
           <motion.div
             ref={highlightRef}
             style={{
@@ -160,7 +131,7 @@ export default function CallTeamSection() {
 
           {/* Items */}
           <div className="relative z-20 flex flex-col gap-y-20 md:gap-y-24">
-            {features.map((item, idx) => {
+            {FEATURES.map((item, idx) => {
               const isLeft = item.side === "left";
               return (
                 <motion.div
@@ -175,7 +146,7 @@ export default function CallTeamSection() {
                     gridTemplateColumns: `1fr ${gapX} ${spineW} ${gapX} 1fr`,
                   }}
                 >
-                  {/* LEFT SIDE (desktop only) */}
+                  {/* LEFT SIDE (desktop) */}
                   {isLeft ? (
                     <>
                       <div
@@ -184,7 +155,6 @@ export default function CallTeamSection() {
                       >
                         <Card item={item} align="right" />
                       </div>
-                      {/* connector from left card edge to spine */}
                       <div
                         className="hidden md:block grad-line self-center"
                         style={{ gridColumn: 2, height: connectorH }}
@@ -203,7 +173,7 @@ export default function CallTeamSection() {
                       />
                     </>
                   ) : (
-                    /* RIGHT SIDE (desktop only) */
+                    // RIGHT SIDE (desktop)
                     <>
                       <div
                         className="hidden md:block"
@@ -217,7 +187,6 @@ export default function CallTeamSection() {
                         className="hidden md:block"
                         style={{ gridColumn: 3 }}
                       />
-                      {/* connector from right card edge to spine */}
                       <div
                         className="hidden md:block grad-line self-center"
                         style={{ gridColumn: 4, height: connectorH }}
@@ -249,8 +218,6 @@ export default function CallTeamSection() {
           --brand-lilac: var(--brand-lilac, #b18cff);
           --brand-cyan: var(--brand-cyan, #3ac4ec);
         }
-
-        /* connectors use brand gradient */
         .grad-line {
           background-image: linear-gradient(
             90deg,
@@ -259,8 +226,6 @@ export default function CallTeamSection() {
           );
           border-radius: 9999px;
         }
-
-        /* animated gradient border for cards */
         .card-gradient {
           background: linear-gradient(
             135deg,
@@ -289,6 +254,19 @@ export default function CallTeamSection() {
   );
 }
 
+/* ---------- helpers ---------- */
+function renderSolidAccentLastWord(text: string) {
+  const parts = text.trim().split(/\s+/);
+  const last = parts.pop() ?? "";
+  const before = parts.join(" ");
+  return (
+    <>
+      {before}{" "}
+      <span style={{ color: "var(--brand-purple, #8A5CFF)" }}>{last}</span>
+    </>
+  );
+}
+
 /* ---------- Card component ---------- */
 function Card({
   item,
@@ -299,8 +277,6 @@ function Card({
 }) {
   const { Icon } = item;
 
-  // Icon alignment: cards on the left → icon sits on the right (toward spine)
-  // cards on the right → icon sits on the left (toward spine). Mobile stays centered.
   const justify =
     align === "left"
       ? "justify-start"
@@ -323,7 +299,6 @@ function Card({
           ].join(" ")}
           style={{ textAlign }}
         >
-          {/* SOLID theme-colored icon (no transparency) */}
           <div className={`mb-4 flex items-center ${justify}`}>
             <div className="bg-white size-12 rounded-full grid place-items-center shadow-sm ring-1 ring-black/10">
               <Icon

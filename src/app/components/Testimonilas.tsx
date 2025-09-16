@@ -14,6 +14,12 @@ type Testimonial = {
 
 type Props = {
   title?: string;
+  /** If provided and found in title, only this word will be colored; otherwise the last word is colored */
+  highlightWord?: string;
+  /** Solid accent for heading highlight + card stroke */
+  accentColor?: string; // e.g. "#8A5CFF"
+  /** Border width in px for all cards (default 2) */
+  strokeWidth?: number;
   subtitle?: string;
   items?: Testimonial[];
   initialLoadingMs?: number;
@@ -24,6 +30,9 @@ export default function TestimonialsSection({
   subtitle = "Real results from real business owners",
   items,
   initialLoadingMs = 800,
+  highlightWord,
+  accentColor = "#8A5CFF",
+  strokeWidth = 2,
 }: Props) {
   const DATA = useMemo<Testimonial[]>(
     () =>
@@ -78,6 +87,12 @@ export default function TestimonialsSection({
     return () => io.disconnect();
   }, []);
 
+  // Accent border style shared by all cards
+  const cardStrokeStyle = {
+    borderColor: accentColor,
+    borderWidth: strokeWidth,
+  };
+
   return (
     <section ref={rootRef} className="relative w-full bg-slate-50">
       <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:px-8">
@@ -86,8 +101,8 @@ export default function TestimonialsSection({
             inView ? "animate-rise-in" : "opacity-0 translate-y-3"
           }`}
         >
-          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl">
-            {title}
+          <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-5xl text-center">
+            {renderHighlightedTitle(title, highlightWord, accentColor)}
           </h2>
           <p className="mt-3 text-slate-600 md:text-lg">{subtitle}</p>
         </header>
@@ -97,10 +112,13 @@ export default function TestimonialsSection({
             ? Array.from({ length: 3 }).map((_, i) => (
                 <figure
                   key={`skeleton-${i}`}
-                  className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
+                  className={`rounded-2xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
                     inView ? "animate-fade-in" : "opacity-0"
                   }`}
-                  style={{ animationDelay: `${150 + i * 120}ms` }}
+                  style={{
+                    ...cardStrokeStyle,
+                    animationDelay: `${150 + i * 120}ms`,
+                  }}
                 >
                   <div className="flex items-center gap-3">
                     <div className="skeleton h-12 w-12 rounded-full" />
@@ -122,10 +140,13 @@ export default function TestimonialsSection({
             : DATA.map((t, i) => (
                 <figure
                   key={`t-${t.name}-${i}`}
-                  className={`rounded-2xl border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
+                  className={`rounded-2xl border bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg ${
                     inView ? "animate-fade-in" : "opacity-0"
                   }`}
-                  style={{ animationDelay: `${150 + i * 120}ms` }}
+                  style={{
+                    ...cardStrokeStyle,
+                    animationDelay: `${150 + i * 120}ms`,
+                  }}
                 >
                   {/* Header: avatar + name */}
                   <div className="flex items-center gap-3">
@@ -134,6 +155,8 @@ export default function TestimonialsSection({
                         src={t.avatarUrl}
                         alt={`${t.name} avatar`}
                         className="h-12 w-12 rounded-full object-cover"
+                        width={48}
+                        height={48}
                       />
                     ) : (
                       <AvatarIcon />
@@ -164,6 +187,33 @@ export default function TestimonialsSection({
         </div>
       </div>
     </section>
+  );
+}
+
+/* ---------- helpers ---------- */
+function renderHighlightedTitle(
+  title: string,
+  highlightWord: string | undefined,
+  accentColor: string
+) {
+  const pick = (() => {
+    if (highlightWord && title.includes(highlightWord)) return highlightWord;
+    const parts = title.trim().split(/\s+/);
+    return parts.length > 1 ? parts[parts.length - 1] : title; // last word
+  })();
+
+  const idx = title.indexOf(pick);
+  if (idx === -1) return title;
+
+  const before = title.slice(0, idx);
+  const after = title.slice(idx + pick.length);
+
+  return (
+    <>
+      {before}
+      <span style={{ color: accentColor }}>{pick}</span>
+      {after}
+    </>
   );
 }
 
