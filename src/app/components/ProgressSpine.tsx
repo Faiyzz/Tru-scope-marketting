@@ -114,7 +114,7 @@ export default function CallTeamSection() {
         <div ref={spineWrapRef} className="relative">
           {/* Base vertical spine */}
           <div
-            className="absolute top-0 bottom-0 left-1/2 -translate-x-1/2 z-0 rounded-full"
+            className="hidden md:block absolute top-0 bottom-0 left-1/2 -translate-x-1/2 z-0 rounded-full"
             style={{ width: spineW, backgroundColor: "rgb(226 232 240)" }} // slate-200
           />
 
@@ -126,7 +126,7 @@ export default function CallTeamSection() {
               width: spineW,
               background: "var(--brand-cyan, #3ac4ec)",
             }}
-            className="absolute left-1/2 -translate-x-1/2 h-24 rounded-full z-10"
+            className="hidden md:block absolute left-1/2 -translate-x-1/2 h-24 rounded-full z-10"
           />
 
           {/* Items */}
@@ -201,7 +201,7 @@ export default function CallTeamSection() {
                   )}
 
                   {/* Mobile: single column */}
-                  <div className="md:hidden col-span-full">
+                  <div className="md:hidden  col-span-full">
                     <Card item={item} align="center" />
                   </div>
                 </motion.div>

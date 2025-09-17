@@ -202,10 +202,7 @@ export default function Hero() {
                     className="device-frame"
                   >
                     <div className="device-m relative">
-                      <HoverVideo
-                        src="/videos/v1.mp4"
-                        poster="/images/web.jpg"
-                      />
+                      <HoverVideo src="/images/v1.mp4" poster="" />
                     </div>
                   </motion.div>
 
@@ -215,10 +212,7 @@ export default function Hero() {
                     className="device-frame"
                   >
                     <div className="device-m relative">
-                      <HoverVideo
-                        src="/videos/v2.mp4"
-                        poster="/images/edit.jpg"
-                      />
+                      <HoverVideo src="/images/v2.mp4" poster="" />
                     </div>
                   </motion.div>
 
@@ -228,10 +222,7 @@ export default function Hero() {
                     className="device-frame"
                   >
                     <div className="device-m relative">
-                      <HoverVideo
-                        src="/videos/v3.mp4"
-                        poster="/images/seo.jpg"
-                      />
+                      <HoverVideo src="/images/v3.mp4" poster="" />
                     </div>
                   </motion.div>
                 </motion.div>
@@ -250,10 +241,7 @@ export default function Hero() {
                     className="absolute left-6 lg:left-10 top-2 rotate-[-8deg] device-frame float-soft z-10"
                   >
                     <div className="device relative">
-                      <HoverVideo
-                        src="/videos/v1.mp4"
-                        poster="/images/web.jpg"
-                      />
+                      <HoverVideo src="/images/v1.mp4" poster="" />
                     </div>
                   </motion.div>
 
@@ -264,10 +252,7 @@ export default function Hero() {
                     className="absolute right-6 lg:right-10 top-1 rotate-[8deg] device-frame float-soft z-10"
                   >
                     <div className="device relative">
-                      <HoverVideo
-                        src="/videos/v2.mp4"
-                        poster="/images/edit.jpg"
-                      />
+                      <HoverVideo src="/images/v2.mp4" poster="" />
                     </div>
                   </motion.div>
 
@@ -278,10 +263,7 @@ export default function Hero() {
                     className="absolute left-1/2 -translate-x-1/2 top-8 device-frame ring-2 ring-white/50 shadow-xl z-20"
                   >
                     <div className="device relative">
-                      <HoverVideo
-                        src="/videos/v3.mp4"
-                        poster="/images/seo.jpg"
-                      />
+                      <HoverVideo src="/images/v3.mp4" poster="" />
                     </div>
                   </motion.div>
                 </motion.div>

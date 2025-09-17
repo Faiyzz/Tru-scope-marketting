@@ -128,6 +128,7 @@ export default function PredictableGrowthSection({
 
   return (
     <section
+      id="process"
       ref={sectionRef as React.RefObject<HTMLElement>}
       className="relative isolate w-full max-w-[100vw] overflow-hidden bg-white"
     >

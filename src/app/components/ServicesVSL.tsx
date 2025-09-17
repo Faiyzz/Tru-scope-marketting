@@ -64,6 +64,7 @@ export default function ServicesSection(): ReactElement {
   const style: CSSProperties = {};
   return (
     <section
+      id="services"
       aria-labelledby="services-heading"
       className="bg-white"
       style={style}

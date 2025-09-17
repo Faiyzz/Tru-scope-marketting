@@ -35,7 +35,10 @@ export default function ReservationSection() {
   };
 
   return (
-    <section className="relative w-full overflow-hidden bg-white py-8 sm:py-10">
+    <section
+      id="reservation"
+      className="relative w-full overflow-hidden bg-white py-8 sm:py-10"
+    >
       {/* Subtler aurora bg (smaller + lighter) */}
       <motion.div
         aria-hidden

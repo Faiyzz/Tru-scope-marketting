@@ -86,7 +86,7 @@ export default function TalentServicesSection({
   const { ref, inView } = useInViewOnce<HTMLDivElement>(0.18);
 
   return (
-    <section ref={ref} className={`w-full bg-white ${className}`}>
+    <section id="work" ref={ref} className={`w-full bg-white ${className}`}>
       <div className="mx-auto max-w-7xl px-4 py-14 md:py-20">
         <div className="mb-8 grid grid-cols-1 items-end gap-6 sm:mb-10">
           <h2 className="text-3xl font-extrabold tracking-tight text-slate-900 md:text-4xl">

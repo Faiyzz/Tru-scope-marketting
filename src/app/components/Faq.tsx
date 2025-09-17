@@ -40,6 +40,7 @@ export default function FAQSection() {
 
   return (
     <motion.section
+      id="faq"
       className={cx("relative bg-white overflow-hidden isolate")}
       initial={{ opacity: 0, y: 24 }}
       whileInView={{ opacity: 1, y: 0 }}

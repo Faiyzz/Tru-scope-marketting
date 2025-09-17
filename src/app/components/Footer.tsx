@@ -3,7 +3,7 @@
 
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { motion, Variants, easeOut, cubicBezier } from "framer-motion";
+import { motion, Variants, easeOut } from "framer-motion";
 
 export default function Footer() {
   // --- Animation presets ---
@@ -15,37 +15,22 @@ export default function Footer() {
     hidden: { opacity: 0, y: 14 },
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: easeOut } },
   };
+
+  // Shimmer that travels fully across the divider
   const shimmer = {
     initial: { x: "-100%" },
     animate: {
-      x: "100%",
+      x: "200%",
       transition: {
         duration: 2.4,
-        ease: cubicBezier(0, 0, 1, 1),
+        ease: "linear",
         repeat: Infinity,
         repeatType: "loop",
       },
     },
   } as const;
 
-  const serviceLinks = [
-    "Illustration",
-    "Mobile Design",
-    "Motion Graphic",
-    "Web Design",
-    "Development",
-    "SEO",
-  ];
-  const companyLinks = [
-    "Service",
-    "Features",
-    "Our Team",
-    "Portfolio",
-    "Blog",
-    "Contact Us",
-  ];
-
-  // Per-icon micro offsets (in px) to nail optical centering
+  // Socials (kept as is)
   const socials = [
     {
       name: "Instagram",
@@ -126,47 +111,115 @@ export default function Footer() {
             </p>
           </motion.div>
 
-          {/* Service */}
+          {/* Sections (simple links – no mapping) */}
           <motion.div variants={item}>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
-              Service
+              About us
             </h4>
             <ul className="mt-4 space-y-3 text-sm">
-              {serviceLinks.map((label) => (
-                <motion.li key={label} variants={item}>
-                  <Link
-                    href="#"
-                    className="relative inline-block transition hover:text-white"
-                  >
-                    {label}
-                    <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w-full" />
-                  </Link>
-                </motion.li>
-              ))}
+              <motion.li variants={item}>
+                <Link
+                  href="/#services"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Services
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#callteam"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Our Process
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#testimonil"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Testimonials
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#faq"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  FAQ
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#reservation"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Contact us
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
             </ul>
           </motion.div>
 
-          {/* Company */}
+          {/* Company (simple links – no mapping) */}
           <motion.div variants={item}>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
-              Company
+              Services
             </h4>
             <ul className="mt-4 space-y-3 text-sm">
-              {companyLinks.map((label) => (
-                <motion.li key={label} variants={item}>
-                  <Link
-                    href="#"
-                    className="relative inline-block transition hover:text-white"
-                  >
-                    {label}
-                    <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w-full" />
-                  </Link>
-                </motion.li>
-              ))}
+              <motion.li variants={item}>
+                <Link
+                  href="/#services"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Video Content Creation
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#work"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Social Media Management
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#services"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Social Media Marketing
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#work"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Web Development
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
+              <motion.li variants={item}>
+                <Link
+                  href="/#reservation"
+                  className="relative inline-block transition hover:text-white"
+                >
+                  Contact Us
+                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
+                </Link>
+              </motion.li>
             </ul>
           </motion.div>
 
-          {/* Social (own column so it aligns with the other headings) */}
+          {/* Social */}
           <motion.div variants={item}>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
               Social
@@ -189,12 +242,13 @@ export default function Footer() {
         <div className="relative mt-10 h-px w-full overflow-hidden rounded bg-white/10">
           <motion.span
             aria-hidden
-            className="absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
-            {...shimmer}
+            className="absolute left-0 inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/50 to-transparent"
+            initial={shimmer.initial}
+            animate={shimmer.animate}
           />
         </div>
 
-        {/* Bottom bar (centered) */}
+        {/* Bottom bar */}
         <motion.div
           variants={container}
           initial="hidden"
@@ -214,7 +268,7 @@ export default function Footer() {
   );
 }
 
-/* ---------- Button wrapper that centers any SVG; no gradients so icons stay visible ---------- */
+/* ---------- Button wrapper ---------- */
 function SocialButton({
   href,
   label,
@@ -250,7 +304,7 @@ function SocialButton({
   );
 }
 
-/* ---------- Simple SVG icons (use currentColor so they inherit button color) ---------- */
+/* ---------- Icons ---------- */
 function InstagramIcon() {
   return (
     <svg

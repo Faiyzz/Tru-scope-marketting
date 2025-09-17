@@ -3,41 +3,43 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ChevronDown, Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string };
 const SOLUTIONS: NavItem[] = [
   { label: "Content Strategy", href: "#" },
-  { label: "Automation", href: "#" },
+  { label: "Bussiness Growth", href: "#" },
   { label: "Analytics", href: "#" },
 ];
 const SERVICES: NavItem[] = [
   { label: "Content Creating", href: "#" },
   { label: "Video Editing", href: "#" },
   { label: "Web Development", href: "#" },
+  { label: "SEO", href: "#" },
 ];
 
 export default function FloatingNavbar({
   brand = "TruScope",
-  ctaHref = "#",
+  logoSrc = "/images/logo.png", // <- add your logo path here (public/)
+  ctaHref = "/#reservation",
   ctaLabel = "Free Consultation",
 }: {
-  brand?: string;
+  brand?: string; // used for alt text / aria label
+  logoSrc?: string;
   ctaHref?: string;
   ctaLabel?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // Toggle background after a tiny scroll
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll(); // run once on mount
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // When mobile menu is open, force solid/visible background
   const showBg = scrolled || mobileOpen;
 
   return (
@@ -46,8 +48,7 @@ export default function FloatingNavbar({
       <header
         role="banner"
         className={[
-          "fixed inset-x-0 top-0 z-50 transition-all",
-          // Transparent at top; glassy once scrolled/open
+          "fixed inset-x-0 top-0 z-50 transition-all pt-2 pb-2",
           showBg
             ? "bg-white/80 supports-[backdrop-filter]:bg-white/60 backdrop-blur-md ring-1 ring-black/5 shadow-sm"
             : "bg-transparent",
@@ -55,13 +56,20 @@ export default function FloatingNavbar({
       >
         <nav className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            {/* Brand */}
+            {/* Brand (logo) */}
             <Link
               href="/"
-              className="font-semibold tracking-tight text-neutral-900 focus-gradient"
               aria-label={`${brand} home`}
+              className="inline-flex items-center focus-gradient"
             >
-              {brand}
+              <Image
+                src={logoSrc}
+                alt={brand}
+                width={100}
+                height={100}
+                priority
+                className="h-auto w-auto"
+              />
             </Link>
 
             {/* Desktop menu */}
@@ -120,7 +128,21 @@ export default function FloatingNavbar({
           aria-modal="true"
         >
           <div className="flex items-center justify-between px-4 h-16">
-            <span className="font-semibold">{brand}</span>
+            {/* Mobile header logo */}
+            <Link
+              href="/"
+              aria-label={`${brand} home`}
+              onClick={() => setMobileOpen(false)}
+              className="inline-flex items-center"
+            >
+              <Image
+                src={logoSrc}
+                alt={brand}
+                width={100}
+                height={100}
+                className="h-auto w-auto"
+              />
+            </Link>
             <button
               aria-label="Close menu"
               className="p-2 rounded-full focus-gradient"
