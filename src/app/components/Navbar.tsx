@@ -8,15 +8,15 @@ import { ChevronDown, Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string };
 const SOLUTIONS: NavItem[] = [
-  { label: "Content Strategy", href: "#" },
-  { label: "Bussiness Growth", href: "#" },
-  { label: "Analytics", href: "#" },
+  { label: "Content Strategy", href: "/#callteam" },
+  { label: "Bussiness Growth", href: "/#process" },
+  { label: "Analytics", href: "/#state" },
 ];
 const SERVICES: NavItem[] = [
-  { label: "Content Creating", href: "#" },
-  { label: "Video Editing", href: "#" },
-  { label: "Web Development", href: "#" },
-  { label: "SEO", href: "#" },
+  { label: "Content Creating", href: "/#work" },
+  { label: "Video Editing", href: "/#work" },
+  { label: "Web Development", href: "/#work" },
+  { label: "SEO", href: "/#work" },
 ];
 
 export default function FloatingNavbar({
@@ -75,7 +75,7 @@ export default function FloatingNavbar({
             {/* Desktop menu */}
             <div className="hidden md:flex items-center gap-8">
               <Dropdown label="Solutions" items={SOLUTIONS} />
-              <NavLink href="#about">About us</NavLink>
+              <NavLink href="/#services">About us</NavLink>
               <Dropdown label="Services" items={SERVICES} />
               <Link
                 href={ctaHref}

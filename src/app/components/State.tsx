@@ -123,6 +123,7 @@ export default function StatsSection({
 
   return (
     <section
+      id="state"
       ref={ref}
       className={`w-full bg-white py-12 md:py-16 ${className}`}
       aria-label="Key performance statistics"

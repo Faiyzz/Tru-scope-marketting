@@ -101,7 +101,14 @@ export default function Footer() {
         >
           {/* Brand / About */}
           <motion.div variants={item}>
-            <h3 className="text-lg font-semibold text-white">TruScope</h3>
+            <Link href="/">
+              <img
+                src="/images/logo.png"
+                alt="TruScope Logo"
+                className="h-auto w-auto -mt-13 -mb-7"
+                style={{ maxWidth: 140 }}
+              />
+            </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
               OurStudio is a digital agency UI / UX Design and Website
               Development located in Ohio, United States of America.
