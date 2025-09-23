@@ -1,12 +1,102 @@
+// components/Hero.tsx
 "use client";
 
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants, easeOut } from "framer-motion";
-import { ArrowRight, PhoneCall } from "lucide-react";
+import { ArrowRight, PhoneCall, X as CloseIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useRef } from "react";
 
-/* --- tiny util: hover-to-play video --- */
+/* ===========================
+   Booking Modal (Portal)
+   =========================== */
+function BookingModal({
+  open,
+  onClose,
+  bookingUrl,
+}: {
+  open: boolean;
+  onClose: () => void;
+  bookingUrl: string;
+}) {
+  // Close on Esc
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
+  // Lock body scroll while open
+  useEffect(() => {
+    if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
+
+  if (!open || typeof window === "undefined") return null;
+
+  const modal = (
+    <div className="fixed inset-0 z-[20000]" role="dialog" aria-modal="true">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Centered wrapper with padding = gap from all sides */}
+      <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        {/* Panel */}
+        <div
+          className="
+            flex w-full max-w-6xl
+            bg-white shadow-2xl rounded-xl sm:rounded-2xl overflow-hidden
+            flex-col
+          "
+          style={{
+            height: "min(92svh, 900px)",
+            maxHeight:
+              "calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)",
+            width: "min(96vw, 1100px)",
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <p className="text-sm font-medium">Book a Free Consultation</p>
+            <button
+              onClick={onClose}
+              aria-label="Close booking"
+              className="p-2 rounded-full hover:bg-neutral-100"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Body */}
+          <div className="flex-1 min-h-0">
+            <iframe
+              src={bookingUrl}
+              title="Booking Widget"
+              className="block w-full h-full bg-white"
+              style={{ border: "none" }}
+              scrolling="auto"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  // Render outside app tree to avoid header/nav stacking contexts
+  return createPortal(modal, document.body);
+}
+
+/* ---------- tiny util: hover-to-play video ---------- */
 function HoverVideo({
   src,
   poster,
@@ -17,12 +107,12 @@ function HoverVideo({
   className?: string;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
-  const play = () => ref.current?.play();
-  const stop = () => {
+  const play = useCallback(() => ref.current?.play(), []);
+  const stop = useCallback(() => {
     if (!ref.current) return;
     ref.current.pause();
     ref.current.currentTime = 0;
-  };
+  }, []);
   return (
     <video
       ref={ref}
@@ -39,7 +129,7 @@ function HoverVideo({
   );
 }
 
-/* --- animation presets (staggered load-in) --- */
+/* ---------- animation presets ---------- */
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const sectionEnter: Variants = {
@@ -76,7 +166,7 @@ const cardItem: Variants = {
     opacity: 0,
     y: 16,
     scale: 0.96,
-    rotate: custom, // keep each card's tilt while hidden
+    rotate: custom,
   }),
   show: (custom: number = 0) => ({
     opacity: 1,
@@ -87,7 +177,13 @@ const cardItem: Variants = {
   }),
 };
 
+/* ---------- constants ---------- */
+const GHL_WIDGET_ID = "Ky3SDrjMdqqFvoZtt5m9";
+const BOOKING_URL = `https://api.leadconnectorhq.com/widget/booking/${GHL_WIDGET_ID}`;
+
 export default function Hero() {
+  const [bookingOpen, setBookingOpen] = useState(false);
+
   return (
     <AnimatePresence mode="wait">
       <motion.section
@@ -120,11 +216,11 @@ export default function Hero() {
           <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_12%_12%,rgba(138,92,255,0.18),transparent_60%)]" />
         </div>
 
-        {/* CONTENT WRAPPER — extra top padding for fixed navbar */}
+        {/* CONTENT */}
         <div className="relative flex min-h-[82vh] items-center pt-[clamp(88px,10vh,128px)]">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 py-8 md:py-10 lg:py-12 md:place-items-center">
-              {/* LEFT (staggered text) */}
+              {/* LEFT */}
               <motion.header
                 className="max-w-2xl mx-auto text-center md:text-left"
                 variants={textGroup}
@@ -162,19 +258,20 @@ export default function Hero() {
                   leaves a lasting impression.
                 </motion.p>
 
-                {/* Buttons */}
+                {/* CTAs */}
                 <motion.nav
                   className="mt-7 flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-3"
                   variants={textItem}
                 >
-                  <Link
-                    href="#book"
+                  <button
+                    type="button"
+                    onClick={() => setBookingOpen(true)}
                     aria-label="Book a free call"
                     className="btn-base btn-gradient text-white shadow-md hover:shadow-lg"
                   >
                     <PhoneCall className="size-4 shrink-0" />
                     Book Free Call
-                  </Link>
+                  </button>
 
                   <Link
                     href="#services"
@@ -187,7 +284,7 @@ export default function Hero() {
                 </motion.nav>
               </motion.header>
 
-              {/* RIGHT (cards enter one-by-one: left -> right -> center) */}
+              {/* RIGHT */}
               <figure aria-hidden className="w-full">
                 {/* MOBILE row */}
                 <motion.div
@@ -205,7 +302,6 @@ export default function Hero() {
                       <HoverVideo src="/images/v1.mp4" poster="" />
                     </div>
                   </motion.div>
-
                   <motion.div
                     variants={cardItem}
                     custom={0}
@@ -215,7 +311,6 @@ export default function Hero() {
                       <HoverVideo src="/images/v2.mp4" poster="" />
                     </div>
                   </motion.div>
-
                   <motion.div
                     variants={cardItem}
                     custom={4}
@@ -234,7 +329,6 @@ export default function Hero() {
                   initial="hidden"
                   animate="show"
                 >
-                  {/* left card */}
                   <motion.div
                     variants={cardItem}
                     custom={-8}
@@ -245,7 +339,6 @@ export default function Hero() {
                     </div>
                   </motion.div>
 
-                  {/* right card */}
                   <motion.div
                     variants={cardItem}
                     custom={8}
@@ -256,7 +349,6 @@ export default function Hero() {
                     </div>
                   </motion.div>
 
-                  {/* center card (last) */}
                   <motion.div
                     variants={cardItem}
                     custom={0}
@@ -272,6 +364,13 @@ export default function Hero() {
           </div>
         </div>
 
+        {/* Modal mounted at root (via portal) so it sits over nav */}
+        <BookingModal
+          open={bookingOpen}
+          onClose={() => setBookingOpen(false)}
+          bookingUrl={BOOKING_URL}
+        />
+
         <style jsx global>{`
           :root {
             --brand-purple: #8a5cff;
@@ -279,7 +378,6 @@ export default function Hero() {
             --brand-cyan: #3ac4ec;
           }
 
-          /* Equal-height button base */
           .btn-base {
             height: 44px;
             display: inline-flex;
@@ -297,7 +395,6 @@ export default function Hero() {
             }
           }
 
-          /* Animated gradient text for SCALES / LASTS */
           .text-shine {
             background-image: linear-gradient(
               100deg,
@@ -318,7 +415,6 @@ export default function Hero() {
             }
           }
 
-          /* Buttons: gradient fill */
           .btn-gradient {
             background-image: linear-gradient(
               100deg,
@@ -338,7 +434,6 @@ export default function Hero() {
             transform: translateY(1px);
           }
 
-          /* Buttons: gradient outline */
           .btn-gradient-outline {
             position: relative;
             color: #111;
@@ -349,7 +444,7 @@ export default function Hero() {
             position: absolute;
             inset: 0;
             border-radius: 9999px;
-            padding: 1px; /* border thickness */
+            padding: 1px;
             background-image: linear-gradient(
               100deg,
               var(--brand-purple) 0%,
@@ -364,7 +459,6 @@ export default function Hero() {
             z-index: -1;
           }
 
-          /* Optional gradient label for outline buttons */
           .text-gradient {
             background-image: linear-gradient(
               100deg,
@@ -376,10 +470,9 @@ export default function Hero() {
             background-size: 200% auto;
             -webkit-background-clip: text;
             background-clip: text;
-            color: transparent;
+            color: transparent.;
           }
 
-          /* Float animation for the device cards */
           .float-soft {
             animation: float 6s ease-in-out infinite;
           }
@@ -393,7 +486,6 @@ export default function Hero() {
             }
           }
 
-          /* Glass frame + device sizes */
           .device-frame {
             padding: 6px;
             border-radius: 1.4rem;
@@ -422,7 +514,6 @@ export default function Hero() {
             overflow: hidden;
           }
 
-          /* Curve positioning (smooth across sizes & 150% zoom) */
           .hero {
             --curve-x: 2vw;
             --curve-y: -1vh;

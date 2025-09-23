@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import Script from "next/script";
 import { ChevronDown, Menu as MenuIcon, X as CloseIcon } from "lucide-react";
 
 type NavItem = { label: string; href: string };
@@ -21,17 +22,20 @@ const SERVICES: NavItem[] = [
 
 export default function FloatingNavbar({
   brand = "TruScope",
-  logoSrc = "/images/logo.png", // <- add your logo path here (public/)
-  ctaHref = "/#reservation",
+  logoSrc = "/images/logo.png",
   ctaLabel = "Free Consultation",
+  // ⬇️ NEW DEFAULT: your latest GHL booking widget
+  bookingUrl = "https://api.leadconnectorhq.com/widget/booking/Ky3SDrjMdqqFvoZtt5m9",
 }: {
-  brand?: string; // used for alt text / aria label
+  brand?: string;
   logoSrc?: string;
-  ctaHref?: string;
   ctaLabel?: string;
+  /** Optionally override the GHL booking URL per page */
+  bookingUrl?: string;
 }) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [showBooking, setShowBooking] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -40,10 +44,23 @@ export default function FloatingNavbar({
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // lock body scroll when modal open
+  useEffect(() => {
+    if (showBooking) document.body.classList.add("overflow-hidden");
+    else document.body.classList.remove("overflow-hidden");
+    return () => document.body.classList.remove("overflow-hidden");
+  }, [showBooking]);
+
   const showBg = scrolled || mobileOpen;
 
   return (
     <>
+      {/* GHL script (only once globally is fine) */}
+      <Script
+        src="https://link.msgsndr.com/js/form_embed.js"
+        strategy="afterInteractive"
+      />
+
       {/* Floating container with smart background */}
       <header
         role="banner"
@@ -77,22 +94,26 @@ export default function FloatingNavbar({
               <Dropdown label="Solutions" items={SOLUTIONS} />
               <NavLink href="/#services">About us</NavLink>
               <Dropdown label="Services" items={SERVICES} />
-              <Link
-                href={ctaHref}
+
+              {/* CTA: opens booking modal */}
+              <button
+                type="button"
+                onClick={() => setShowBooking(true)}
                 className="btn-base btn-gradient shadow-md hover:shadow-lg focus-gradient"
               >
                 {ctaLabel}
-              </Link>
+              </button>
             </div>
 
             {/* Mobile toggles */}
             <div className="md:hidden flex items-center gap-2">
-              <Link
-                href={ctaHref}
+              <button
+                type="button"
+                onClick={() => setShowBooking(true)}
                 className="btn-base btn-gradient shadow-md hover:shadow-lg focus-gradient"
               >
                 {ctaLabel}
-              </Link>
+              </button>
               <button
                 aria-label="Open menu"
                 className="p-2 rounded-full focus-gradient"
@@ -128,7 +149,6 @@ export default function FloatingNavbar({
           aria-modal="true"
         >
           <div className="flex items-center justify-between px-4 h-16">
-            {/* Mobile header logo */}
             <Link
               href="/"
               aria-label={`${brand} home`}
@@ -171,16 +191,26 @@ export default function FloatingNavbar({
               onItem={() => setMobileOpen(false)}
             />
 
-            <Link
-              href={ctaHref}
-              onClick={() => setMobileOpen(false)}
+            <button
+              type="button"
+              onClick={() => {
+                setMobileOpen(false);
+                setShowBooking(true);
+              }}
               className="mt-6 inline-flex w-full items-center justify-center btn-base btn-gradient shadow-md hover:shadow-lg focus-gradient"
             >
               {ctaLabel}
-            </Link>
+            </button>
           </div>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal
+        open={showBooking}
+        onClose={() => setShowBooking(false)}
+        bookingUrl={bookingUrl}
+      />
     </>
   );
 }
@@ -210,7 +240,7 @@ function Dropdown({ label, items }: { label: string; items: NavItem[] }) {
       <button
         className="inline-flex items-center gap-1 text-sm font-medium text-neutral-900 hover:opacity-70 transition focus-gradient"
         aria-haspopup="menu"
-        aria-expanded="false"
+        aria-expanded={false}
       >
         {label}
         <ChevronDown className="h-4 w-4" />
@@ -300,6 +330,71 @@ function MobileGroup({
               {it.label}
             </Link>
           ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- Booking Modal (near full-screen, proper gaps) ---------- */
+function BookingModal({
+  open,
+  onClose,
+  bookingUrl,
+}: {
+  open: boolean;
+  onClose: () => void;
+  bookingUrl: string;
+}) {
+  if (!open) return null;
+
+  return (
+    <div className="fixed inset-0 z-[999]" role="dialog" aria-modal="true">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+
+      {/* Centered wrapper with padding = the gap from all sides */}
+      <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        {/* Panel */}
+        <div
+          className="
+            flex w-full max-w-6xl
+            bg-white shadow-2xl rounded-xl sm:rounded-2xl overflow-hidden
+            flex-col
+          "
+          style={{
+            height: "min(92svh, 900px)",
+            maxHeight:
+              "calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)",
+            width: "min(96vw, 1100px)",
+          }}
+        >
+          {/* Header (fixed) */}
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <p className="text-sm font-medium">Book a Free Consultation</p>
+            <button
+              onClick={onClose}
+              aria-label="Close booking"
+              className="p-2 rounded-full hover:bg-neutral-100"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </button>
+          </div>
+
+          {/* Body fills remaining space */}
+          <div className="flex-1 min-h-0">
+            <iframe
+              src={bookingUrl}
+              title="Booking Widget"
+              className="block w-full h-full"
+              style={{ border: "none" }}
+              scrolling="auto"
+              loading="lazy"
+            />
+          </div>
         </div>
       </div>
     </div>

@@ -9,12 +9,15 @@ import {
   useInView,
   type Variants,
 } from "framer-motion";
+import Script from "next/script";
+
+/* ---------------- GHL embed ---------------- */
+const GHL_WIDGET_URL =
+  "https://api.leadconnectorhq.com/widget/booking/Ky3SDrjMdqqFvoZtt5m9";
+const GHL_SCRIPT_SRC = "https://link.msgsndr.com/js/form_embed.js";
 
 /* ---------------- Theme ---------------- */
 const ACCENT = "#3ac4ec";
-const ACCENT_DARK = "#1f9fc0";
-const GRAD_FROM = "rgba(58,196,236,0.22)";
-const GRAD_TO = "rgba(99,102,241,0.18)";
 
 /* ---------------- Types ---------------- */
 type Step = { id: number; title: string; blurb: string };
@@ -30,6 +33,92 @@ type Props = {
   initialLoadingMs?: number;
 };
 
+/* ---------------- Improved Modal ---------------- */
+function BookingModal({
+  open,
+  onClose,
+  src,
+  navOffsetPx = 72,
+  title = "Book a Free Consultation",
+}: {
+  open: boolean;
+  onClose: () => void;
+  src: string;
+  navOffsetPx?: number;
+  title?: string;
+}) {
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      aria-modal
+      role="dialog"
+      className="fixed inset-0 z-[9999] flex items-start justify-center"
+      style={{ paddingTop: navOffsetPx + 16 }}
+    >
+      {/* Backdrop → only blur, no opaque color */}
+      <button
+        aria-label="Close booking"
+        onClick={onClose}
+        className="absolute inset-0 backdrop-blur-md"
+      />
+
+      {/* Dialog */}
+      <div
+        className="
+          relative mx-4 w-full
+          max-w-[1100px] rounded-2xl bg-white shadow-2xl ring-1 ring-black/10
+        "
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between rounded-t-2xl border-b px-5 py-3">
+          <h4 className="text-base font-semibold text-slate-900">{title}</h4>
+          <button
+            onClick={onClose}
+            className="rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-3 pb-3 pt-3">
+          <div
+            className="relative w-full overflow-auto rounded-xl ring-1 ring-black/5"
+            style={{ height: "min(85vh, 900px)" }}
+          >
+            <iframe
+              title="GHL Booking"
+              id={`ghl_popup_${Math.random().toString(36).slice(2)}`}
+              src={src}
+              scrolling="no"
+              className="h-full w-full rounded-xl"
+              style={{ border: "none", overflow: "hidden", display: "block" }}
+            />
+          </div>
+          <p className="mt-2 text-center text-[11px] text-slate-400">
+            Powered by GHL
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- Component ---------------- */
 export default function PredictableGrowthSection({
   title = "Our Process to Predictable Growth",
   subtitle = "A proven methodology that delivers consistent, measurable results for your business.",
@@ -77,7 +166,7 @@ export default function PredictableGrowthSection({
     "Flexible engagement models",
   ];
 
-  /* ---- skeleton load ---- */
+  // skeleton
   const [loading, setLoading] = React.useState(true);
   React.useEffect(() => {
     const t = setTimeout(
@@ -100,7 +189,7 @@ export default function PredictableGrowthSection({
     []
   );
 
-  /* ---- scroll progress + in-view ---- */
+  // progress + in-view
   const sectionRef = React.useRef<HTMLElement | null>(null);
   const railWrapRef = React.useRef<HTMLDivElement | null>(null);
   const metricsRef = React.useRef<HTMLDivElement | null>(null);
@@ -116,7 +205,7 @@ export default function PredictableGrowthSection({
     margin: "0px 0px -20% 0px",
   });
 
-  /* ---- animations ---- */
+  // anims
   const container: Variants = {
     hidden: {},
     show: { transition: { staggerChildren: 0.08, delayChildren: 0.04 } },
@@ -126,30 +215,28 @@ export default function PredictableGrowthSection({
     show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: "easeOut" } },
   };
 
+  // modal
+  const [bookingOpen, setBookingOpen] = React.useState(false);
+  const handleCta = () => {
+    onCtaClick?.();
+    setBookingOpen(true);
+  };
+
   return (
     <section
       id="process"
       ref={sectionRef as React.RefObject<HTMLElement>}
       className="relative isolate w-full max-w-[100vw] overflow-hidden bg-white"
     >
-      {/* CLIPPED decorations */}
+      {/* decor */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 overflow-hidden"
         style={{ contain: "paint" }}
-      >
-        <motion.div
-          className="absolute -bottom-20 -right-20 h-[24rem] w-[24rem] rounded-full blur-3xl"
-          style={{
-            background:
-              "radial-gradient(60% 60% at 50% 50%, rgba(34,197,94,0.12) 0%, rgba(99,102,241,0.1) 40%, transparent 70%)",
-            opacity: 0.55,
-          }}
-        />
-      </div>
+      />
 
       <div className="relative mx-auto max-w-6xl px-6 py-14 md:py-16 lg:px-8">
-        {/* Heading — centered; last word solid accent */}
+        {/* Heading */}
         <motion.header
           variants={container}
           initial="hidden"
@@ -163,7 +250,6 @@ export default function PredictableGrowthSection({
           >
             {renderSolidAccentLastWord(title)}
           </motion.h2>
-
           <motion.p
             variants={item}
             className="mt-2 text-base md:text-lg text-slate-600"
@@ -172,7 +258,7 @@ export default function PredictableGrowthSection({
           </motion.p>
         </motion.header>
 
-        {/* Metrics band — centered block + centered content */}
+        {/* Metrics */}
         <motion.div
           ref={metricsRef}
           variants={container}
@@ -183,40 +269,40 @@ export default function PredictableGrowthSection({
                      bg-[linear-gradient(135deg,rgba(58,196,236,0.10),rgba(31,159,192,0.08))] p-5 sm:p-6 text-center"
         >
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 justify-items-center">
-            {loading
-              ? SKELETON_METRICS.map((i) => (
-                  <motion.div
-                    key={`metric-skel-${i}`}
-                    variants={item}
-                    className="space-y-1 w-full"
-                  >
+            {(loading ? SKELETON_METRICS : METRICS).map((m, i) => (
+              <motion.div
+                key={
+                  loading ? `metric-skel-${i}` : `metric-${(m as Metric).id}`
+                }
+                variants={item}
+                className="space-y-1"
+              >
+                {loading ? (
+                  <>
                     {shimmerBlock(40, 22)}
                     <div className="text-xs font-medium text-slate-700 sm:text-sm flex justify-center">
                       {shimmerLine(60, 100)}
                     </div>
-                  </motion.div>
-                ))
-              : METRICS.map((m, i) => (
-                  <motion.div
-                    key={`metric-${m.id}`}
-                    variants={item}
-                    className="space-y-1"
-                  >
+                  </>
+                ) : (
+                  <>
                     <div className="text-3xl sm:text-4xl font-extrabold tracking-tight">
                       <span className="tabular-nums text-gradient inline-flex items-baseline">
                         <CountUp
-                          end={m.value}
+                          end={(m as Metric).value}
                           duration={900 + i * 120}
-                          play={metricsInView && !loading}
+                          play={!!metricsInView && !loading}
                         />
-                        <MetricSuffix id={m.id} gradient />
+                        <MetricSuffix id={(m as Metric).id} gradient />
                       </span>
                     </div>
                     <div className="text-xs font-medium text-slate-700 sm:text-sm">
-                      {m.label}
+                      {(m as Metric).label}
                     </div>
-                  </motion.div>
-                ))}
+                  </>
+                )}
+              </motion.div>
+            ))}
           </div>
         </motion.div>
 
@@ -228,97 +314,43 @@ export default function PredictableGrowthSection({
               ref={railWrapRef}
               className="relative overflow-hidden md:overflow-visible pb-1"
             >
-              {/* Rail base + fill moved slightly right */}
               <div className="absolute left-7 top-0 hidden h-full w-[3px] -translate-x-1/2 rounded rail-base md:block" />
               <motion.div
                 className="absolute left-7 top-0 hidden w-[3px] -translate-x-1/2 rounded rail-fill md:block"
                 style={{ height: fillY }}
               />
-
               <ol className="space-y-4">
-                {loading
-                  ? SKELETON_STEPS.map((i) => (
-                      <motion.li
-                        key={`step-skel-${i}`}
-                        variants={item}
-                        initial="hidden"
-                        whileInView="show"
-                        viewport={{ once: true, amount: 0.35 }}
-                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm md:pl-20"
-                      >
-                        <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
-                          <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
-                            <span className="text-sm font-bold text-white">
-                              {i + 1}
-                            </span>
-                          </div>
-                        </div>
-                        <h3 className="text-base font-semibold text-slate-900 md:text-lg">
-                          {shimmerLine(90, 140)}
-                        </h3>
-                        <p className="mt-1 text-sm text-slate-600">
-                          {shimmerLine(160, 220)}
-                        </p>
-                      </motion.li>
-                    ))
-                  : STEPS.map((s) => (
-                      <motion.li
-                        key={`step-${s.id}`}
-                        variants={item}
-                        initial="hidden"
-                        whileInView="show"
-                        viewport={{ once: true, amount: 0.35 }}
-                        className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-20"
-                      >
-                        <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
-                          <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
-                            <span className="text-sm font-bold text-white">
-                              {s.id}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="ml-0 md:ml-2">
-                          <h3 className="text-base md:text-lg font-semibold text-slate-900">
-                            {s.title}
-                          </h3>
-                          <p className="mt-1 text-sm text-slate-600">
-                            {s.blurb}
-                          </p>
-                        </div>
-                      </motion.li>
-                    ))}
+                {(loading ? SKELETON_STEPS : STEPS).map((s, idx) => (
+                  <motion.li
+                    key={
+                      loading ? `step-skel-${idx}` : `step-${(s as Step).id}`
+                    }
+                    variants={item}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.35 }}
+                    className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-20"
+                  >
+                    <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
+                      <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
+                        <span className="text-sm font-bold text-white">
+                          {loading ? idx + 1 : (s as Step).id}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ml-0 md:ml-2">
+                      <h3 className="text-base md:text-lg font-semibold text-slate-900">
+                        {loading ? shimmerLine(90, 140) : (s as Step).title}
+                      </h3>
+                      <p className="mt-1 text-sm text-slate-600">
+                        {loading ? shimmerLine(160, 220) : (s as Step).blurb}
+                      </p>
+                    </div>
+                  </motion.li>
+                ))}
               </ol>
             </div>
-
-            {/* CTA (kept outside railWrapRef so the rail doesn't extend under it) */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, ease: "easeOut", delay: 0.05 }}
-              className="mt-7 md:mt-9"
-            >
-              <button
-                onClick={onCtaClick}
-                className="group btn-base btn-gradient text-white shadow-md hover:shadow-lg"
-              >
-                <span className="relative">Start My Strategy</span>
-                <svg
-                  className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                >
-                  <path
-                    d="M7 5l5 5-5 5"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </button>
-            </motion.div>
+            <div className="mt-7 md:mt-9" />
           </div>
 
           {/* RIGHT: Sticky benefits + CTA */}
@@ -335,21 +367,21 @@ export default function PredictableGrowthSection({
                   Your Advantage
                 </p>
                 <ul className="mt-4 space-y-3">
-                  {loading
-                    ? SKELETON_ADV.map((i) => (
-                        <li key={`adv-skel-${i}`}>{shimmerLine(140, 220)}</li>
-                      ))
-                    : ADV.map((text, i) => (
-                        <li key={`adv-${i}`} className="flex items-start gap-3">
-                          <CheckIcon />
-                          <span className="text-slate-700">{text}</span>
-                        </li>
-                      ))}
+                  {(loading ? SKELETON_ADV : ADV).map((text, i) =>
+                    loading ? (
+                      <li key={`adv-skel-${i}`}>{shimmerLine(140, 220)}</li>
+                    ) : (
+                      <li key={`adv-${i}`} className="flex items-start gap-3">
+                        <CheckIcon />
+                        <span className="text-slate-700">{text}</span>
+                      </li>
+                    )
+                  )}
                 </ul>
 
                 <div className="mt-6">
                   <button
-                    onClick={onCtaClick}
+                    onClick={handleCta}
                     className="group btn-base btn-gradient w-full text-white shadow-md hover:shadow-lg"
                   >
                     <span className="relative">Start My Strategy</span>
@@ -381,8 +413,6 @@ export default function PredictableGrowthSection({
           --brand-lilac: var(--brand-lilac, #b18cff);
           --brand-cyan: var(--brand-cyan, #3ac4ec);
         }
-
-        /* gradient text (numbers only) */
         .text-gradient {
           background-image: linear-gradient(
             100deg,
@@ -396,8 +426,6 @@ export default function PredictableGrowthSection({
           background-clip: text;
           color: transparent;
         }
-
-        /* shared button base + gradient fill */
         .btn-base {
           height: 44px;
           display: inline-flex;
@@ -408,11 +436,6 @@ export default function PredictableGrowthSection({
           font-weight: 600;
           font-size: 0.875rem;
           line-height: 1;
-        }
-        @media (min-width: 640px) {
-          .btn-base {
-            padding-inline: 1.375rem;
-          }
         }
         .btn-gradient {
           background-image: linear-gradient(
@@ -429,11 +452,6 @@ export default function PredictableGrowthSection({
         .btn-gradient:hover {
           background-position: 100% center;
         }
-        .btn-gradient:active {
-          transform: translateY(1px);
-        }
-
-        /* THEME rail & step badges */
         .rail-base {
           background: linear-gradient(
             180deg,
@@ -460,6 +478,17 @@ export default function PredictableGrowthSection({
           box-shadow: 0 20px 40px -15px rgba(58, 196, 236, 0.4);
         }
       `}</style>
+
+      {/* LeadConnector script (loads once) */}
+      <Script src={GHL_SCRIPT_SRC} strategy="afterInteractive" />
+
+      {/* Booking modal (tweak navOffsetPx if your navbar height differs) */}
+      <BookingModal
+        open={bookingOpen}
+        onClose={() => setBookingOpen(false)}
+        src={GHL_WIDGET_URL}
+        navOffsetPx={72}
+      />
     </section>
   );
 }
@@ -472,7 +501,7 @@ function renderSolidAccentLastWord(raw: string) {
   const before = parts.join(" ");
   return (
     <>
-      {before} {""}
+      {before}{" "}
       <span style={{ color: "var(--brand-purple, #8A5CFF)" }}>{last}</span>
     </>
   );
@@ -508,7 +537,6 @@ function MetricSuffix({
   return null;
 }
 
-/** Count-up that only plays when `play` is true */
 function CountUp({
   end,
   duration = 1000,
@@ -520,7 +548,6 @@ function CountUp({
 }) {
   const [val, setVal] = React.useState(0);
   const startRef = React.useRef<number | null>(null);
-
   React.useEffect(() => {
     if (!play) {
       setVal(0);
@@ -538,11 +565,9 @@ function CountUp({
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [end, duration, play]);
-
   return <span>{val}</span>;
 }
 
-/* ---------------- Shimmer placeholders ---------------- */
 function shimmerLine(minW = 60, maxW = 120) {
   const w = Math.floor(Math.random() * (maxW - minW + 1)) + minW;
   return (

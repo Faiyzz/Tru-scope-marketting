@@ -114,8 +114,8 @@ export default function StatsSection({
   className = "",
   items = [
     { value: 100, suffix: "+", label: "Happy Clients" },
-    { value: 2, label: "Avg. ROI" },
-    { value: 44, label: "Leads/Month" },
+    { value: 4, label: "Avg. ROI" },
+    { value: 67, label: "Leads/Month" },
     { value: 98, suffix: "%", label: "Retention" },
   ],
 }: StatsSectionProps) {

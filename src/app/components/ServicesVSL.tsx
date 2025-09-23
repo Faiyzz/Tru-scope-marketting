@@ -120,32 +120,18 @@ export default function ServicesSection(): ReactElement {
               </motion.div>
 
               {/* Text */}
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
               {badge && (
                 <span className="mt-1 inline-flex items-center rounded-full bg-white/70 px-2 py-0.5 text-[11px] font-medium text-gray-900 ring-1 ring-black/5">
                   {badge}
                 </span>
               )}
-              <p className="mt-2 text-sm leading-6 text-gray-600">
+              <p className="mt-2 text-[15px] leading-7 text-gray-600 md:text-base">
                 {description}
               </p>
 
-              {/* CTA */}
-              <motion.a
-                href="#contact"
-                className="mt-5 inline-flex h-11 items-center justify-center rounded-full px-5 text-sm font-semibold text-white shadow-md hover:shadow-lg"
-                style={{
-                  backgroundImage: GRADIENT,
-                  backgroundSize: "200% auto",
-                  backgroundPosition: "0% center",
-                }}
-                whileHover={{ backgroundPosition: "100% center" }}
-                whileTap={{ scale: 0.98 }}
-                transition={{ duration: 0.6, ease: "easeOut" }}
-              >
-                Learn More
-              </motion.a>
-
+              {/* Removed CTA; add a small spacer so height feels balanced */}
+              <div className="mt-4" />
               {/* Focus ring (matched to accent) */}
               <span className="pointer-events-none absolute inset-0 rounded-2xl ring-0 transition group-focus-within:ring-2 group-focus-within:ring-[#8A5CFF]" />
             </motion.article>

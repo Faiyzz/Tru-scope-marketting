@@ -3,28 +3,31 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Clock, Phone, Loader2, ExternalLink } from "lucide-react";
 import { motion, type Variants } from "framer-motion";
+import Script from "next/script";
 
-// 👉 Replace with your Calendly link
-const CALENDLY_URL = "https://calendly.com/yourname/30min";
-const ACCENT = "#3ac4ec"; // brand accent (used lightly)
+// 👉 Replace with YOUR GHL/LeadConnector booking URL
+// Example you shared:
+const GHL_WIDGET_URL =
+  "https://api.leadconnectorhq.com/widget/booking/Ky3SDrjMdqqFvoZtt5m9";
+const GHL_SCRIPT_SRC = "https://link.msgsndr.com/js/form_embed.js";
+
+// brand accent (used lightly)
+const ACCENT = "#3ac4ec";
 
 export default function ReservationSection() {
-  // --- SSR-safe embed_domain + mount flags
-  const [domain, setDomain] = useState("localhost");
+  // SSR-safe mount + loader
   const [mounted, setMounted] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
-  useEffect(() => {
-    setMounted(true);
-    if (typeof window !== "undefined") setDomain(window.location.hostname);
-  }, []);
-
-  const embedSrc = useMemo(
-    () => `${CALENDLY_URL}?embed_type=Inline&embed_domain=${domain}`,
-    [domain]
+  // Stable iframe id (LeadConnector script uses it to auto-resize)
+  const iframeId = useMemo(
+    () => `ghl_widget_${Math.random().toString(36).slice(2)}`,
+    []
   );
 
-  // --- Framer Motion (typed to avoid TS errors)
+  useEffect(() => setMounted(true), []);
+
+  // Framer Motion variants
   const container: Variants = {
     hidden: {},
     show: { transition: { staggerChildren: 0.06, delayChildren: 0.04 } },
@@ -39,7 +42,7 @@ export default function ReservationSection() {
       id="reservation"
       className="relative w-full overflow-hidden bg-white py-8 sm:py-10"
     >
-      {/* Subtler aurora bg (smaller + lighter) */}
+      {/* soft aurora bg */}
       <motion.div
         aria-hidden
         className="pointer-events-none absolute -top-28 -left-28 h-[22rem] w-[22rem] rounded-full blur-3xl"
@@ -75,7 +78,7 @@ export default function ReservationSection() {
           viewport={{ once: true, amount: 0.25 }}
           className="grid grid-cols-1 overflow-hidden rounded-2xl bg-white shadow-xl ring-1 ring-black/5 md:grid-cols-[1fr_1.15fr]"
         >
-          {/* Left column (more compact) */}
+          {/* Left column */}
           <motion.div variants={item} className="p-6 sm:p-8">
             <div
               className="inline-flex h-10 w-10 items-center justify-center rounded-xl"
@@ -124,17 +127,17 @@ export default function ReservationSection() {
                 Report abuse
               </a>
               <a
-                href={CALENDLY_URL}
+                href={GHL_WIDGET_URL}
                 target="_blank"
                 rel="noreferrer"
                 className="inline-flex items-center gap-1 rounded-full border border-slate-200 px-3 py-1.5 font-medium text-slate-600 hover:bg-slate-50"
               >
-                Open in Calendly <ExternalLink className="h-3.5 w-3.5" />
+                Open in new tab <ExternalLink className="h-3.5 w-3.5" />
               </a>
             </div>
           </motion.div>
 
-          {/* Right column — compact Calendly card */}
+          {/* Right column — GHL widget */}
           <motion.div variants={item} className="p-4 sm:p-6">
             <h3 className="mb-3 text-base font-semibold text-slate-900">
               Select a Time
@@ -157,24 +160,27 @@ export default function ReservationSection() {
                 </div>
               )}
 
-              {/* Iframe (mount only on client) */}
+              {/* GHL iframe (auto-resized by LeadConnector script) */}
               {mounted && (
-                <iframe
-                  title="Calendly Scheduling"
-                  src={embedSrc}
-                  className={`w-full rounded-xl transition-opacity duration-500 ${
-                    iframeLoaded ? "opacity-100" : "opacity-0"
-                  } 
-                  h-[460px] sm:h-[520px] lg:h-[560px]`}
-                  loading="lazy"
-                  onLoad={() => setIframeLoaded(true)}
-                />
+                <>
+                  <iframe
+                    title="GHL Scheduling"
+                    id={iframeId}
+                    src={GHL_WIDGET_URL}
+                    scrolling="no"
+                    className={`w-full rounded-xl transition-opacity duration-500 ${
+                      iframeLoaded ? "opacity-100" : "opacity-0"
+                    } h-[560px]`} // initial height; script will adjust
+                    style={{ border: "none", overflow: "hidden" }}
+                    onLoad={() => setIframeLoaded(true)}
+                  />
+                  {/* Load LeadConnector embed script once */}
+                  <Script src={GHL_SCRIPT_SRC} strategy="afterInteractive" />
+                </>
               )}
             </div>
 
-            <p className="mt-2 text-[11px] text-slate-400">
-              Powered by Calendly
-            </p>
+            <p className="mt-2 text-[11px] text-slate-400">Powered by GHL</p>
           </motion.div>
         </motion.div>
       </div>
