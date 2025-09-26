@@ -1,135 +1,113 @@
-// components/Hero.tsx
 "use client";
 
-import React, { useState, useEffect, useRef, useCallback } from "react";
-import { createPortal } from "react-dom";
+import React, { useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence, Variants, easeOut } from "framer-motion";
-import { ArrowRight, PhoneCall, X as CloseIcon } from "lucide-react";
+import { ArrowRight, PhoneCall, Volume2, VolumeX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-/* ===========================
-   Booking Modal (Portal)
-   =========================== */
-function BookingModal({
-  open,
-  onClose,
-  bookingUrl,
-}: {
-  open: boolean;
-  onClose: () => void;
-  bookingUrl: string;
-}) {
-  // Close on Esc
-  useEffect(() => {
-    if (!open) return;
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, [open, onClose]);
-
-  // Lock body scroll while open
-  useEffect(() => {
-    if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open]);
-
-  if (!open || typeof window === "undefined") return null;
-
-  const modal = (
-    <div className="fixed inset-0 z-[20000]" role="dialog" aria-modal="true">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={onClose}
-      />
-
-      {/* Centered wrapper with padding = gap from all sides */}
-      <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8">
-        {/* Panel */}
-        <div
-          className="
-            flex w-full max-w-6xl
-            bg-white shadow-2xl rounded-xl sm:rounded-2xl overflow-hidden
-            flex-col
-          "
-          style={{
-            height: "min(92svh, 900px)",
-            maxHeight:
-              "calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)",
-            width: "min(96vw, 1100px)",
-          }}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b">
-            <p className="text-sm font-medium">Book a Free Consultation</p>
-            <button
-              onClick={onClose}
-              aria-label="Close booking"
-              className="p-2 rounded-full hover:bg-neutral-100"
-            >
-              <CloseIcon className="h-5 w-5" />
-            </button>
-          </div>
-
-          {/* Body */}
-          <div className="flex-1 min-h-0">
-            <iframe
-              src={bookingUrl}
-              title="Booking Widget"
-              className="block w-full h-full bg-white"
-              style={{ border: "none" }}
-              scrolling="auto"
-              loading="lazy"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  // Render outside app tree to avoid header/nav stacking contexts
-  return createPortal(modal, document.body);
-}
-
-/* ---------- tiny util: hover-to-play video ---------- */
-function HoverVideo({
+/* --- video card: hover play + click to pin + mute toggle --- */
+function VideoCard({
   src,
   poster,
   className = "",
+  controlsAlign = "right",
 }: {
   src: string;
   poster?: string;
   className?: string;
+  controlsAlign?: "left" | "right";
 }) {
-  const ref = useRef<HTMLVideoElement>(null);
-  const play = useCallback(() => ref.current?.play(), []);
-  const stop = useCallback(() => {
-    if (!ref.current) return;
-    ref.current.pause();
-    ref.current.currentTime = 0;
+  const vidRef = useRef<HTMLVideoElement>(null);
+  const [muted, setMuted] = useState(true);
+  const [hovered, setHovered] = useState(false);
+  const [pinned, setPinned] = useState(false);
+
+  const play = useCallback(() => {
+    if (!vidRef.current) return;
+    vidRef.current.muted = muted;
+    vidRef.current.play().catch(() => {});
+  }, [muted]);
+
+  const pauseAndReset = useCallback(() => {
+    if (!vidRef.current) return;
+    vidRef.current.pause();
+    vidRef.current.currentTime = 0;
   }, []);
+
+  const onEnter = useCallback(() => {
+    setHovered(true);
+    if (!pinned) play();
+  }, [pinned, play]);
+
+  const onLeave = useCallback(() => {
+    setHovered(false);
+    if (!pinned) pauseAndReset();
+  }, [pinned, pauseAndReset]);
+
+  const toggleMute = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (!vidRef.current) return;
+      const next = !muted;
+      setMuted(next);
+      vidRef.current.muted = next;
+      vidRef.current.play().catch(() => {});
+    },
+    [muted]
+  );
+
+  const togglePinned = useCallback(() => {
+    setPinned((prev) => {
+      const next = !prev;
+      if (next) play();
+      else if (!hovered) pauseAndReset();
+      return next;
+    });
+  }, [hovered, pauseAndReset, play]);
+
   return (
-    <video
-      ref={ref}
-      src={src}
-      poster={poster}
-      muted
-      playsInline
-      loop
-      preload="metadata"
-      onMouseEnter={play}
-      onMouseLeave={stop}
-      className={`absolute inset-0 h-full w-full object-cover ${className}`}
-    />
+    <div
+      className={`relative w-full h-full ${className}`}
+      onPointerEnter={onEnter}
+      onPointerLeave={onLeave}
+      onClick={togglePinned}
+    >
+      <video
+        ref={vidRef}
+        src={src}
+        poster={poster}
+        muted={muted}
+        playsInline
+        loop
+        preload="metadata"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      {(hovered || pinned) && (
+        <div
+          className={`absolute bottom-2 ${
+            controlsAlign === "left" ? "left-2" : "right-2"
+          } z-30 flex items-center gap-2`}
+        >
+          <button
+            type="button"
+            onClick={toggleMute}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/55 text-white backdrop-blur-sm hover:bg-black/70"
+            aria-label={muted ? "Unmute" : "Mute"}
+          >
+            {muted ? (
+              <VolumeX className="h-4 w-4" />
+            ) : (
+              <Volume2 className="h-4 w-4" />
+            )}
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
 
-/* ---------- animation presets ---------- */
+/* --- animation presets --- */
 const ease = [0.22, 1, 0.36, 1] as const;
 
 const sectionEnter: Variants = {
@@ -177,13 +155,7 @@ const cardItem: Variants = {
   }),
 };
 
-/* ---------- constants ---------- */
-const GHL_WIDGET_ID = "Ky3SDrjMdqqFvoZtt5m9";
-const BOOKING_URL = `https://api.leadconnectorhq.com/widget/booking/${GHL_WIDGET_ID}`;
-
 export default function Hero() {
-  const [bookingOpen, setBookingOpen] = useState(false);
-
   return (
     <AnimatePresence mode="wait">
       <motion.section
@@ -195,20 +167,6 @@ export default function Hero() {
         animate="show"
         exit="exit"
       >
-        {/* BG 1: Curve */}
-        <div className="absolute inset-0 -z-50 ">
-          <div className="curve-pos absolute inset-0">
-            <Image
-              src="/images/curve.png"
-              alt="Decorative curved gradient background"
-              fill
-              priority
-              sizes="100vw"
-              className="object-cover md:object-contain"
-            />
-          </div>
-        </div>
-
         {/* BG 2: soft washes */}
         <div aria-hidden className="pointer-events-none absolute inset-0 -z-40">
           <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_48%_40%,rgba(255,255,255,0.60),transparent_60%)]" />
@@ -216,11 +174,11 @@ export default function Hero() {
           <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_12%_12%,rgba(138,92,255,0.18),transparent_60%)]" />
         </div>
 
-        {/* CONTENT */}
+        {/* CONTENT WRAPPER */}
         <div className="relative flex min-h-[82vh] items-center pt-[clamp(88px,10vh,128px)]">
           <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 py-8 md:py-10 lg:py-12 md:place-items-center">
-              {/* LEFT */}
+              {/* LEFT (text) */}
               <motion.header
                 className="max-w-2xl mx-auto text-center md:text-left"
                 variants={textGroup}
@@ -258,20 +216,19 @@ export default function Hero() {
                   leaves a lasting impression.
                 </motion.p>
 
-                {/* CTAs */}
+                {/* Buttons */}
                 <motion.nav
                   className="mt-7 flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-3"
                   variants={textItem}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setBookingOpen(true)}
+                  <Link
+                    href="#book"
                     aria-label="Book a free call"
                     className="btn-base btn-gradient text-white shadow-md hover:shadow-lg"
                   >
                     <PhoneCall className="size-4 shrink-0" />
                     Book Free Call
-                  </button>
+                  </Link>
 
                   <Link
                     href="#services"
@@ -284,7 +241,7 @@ export default function Hero() {
                 </motion.nav>
               </motion.header>
 
-              {/* RIGHT */}
+              {/* RIGHT (videos) */}
               <figure aria-hidden className="w-full">
                 {/* MOBILE row */}
                 <motion.div
@@ -293,36 +250,26 @@ export default function Hero() {
                   initial="hidden"
                   animate="show"
                 >
-                  <motion.div
-                    variants={cardItem}
-                    custom={-4}
-                    className="device-frame"
-                  >
+                  <motion.div variants={cardItem} custom={-4}>
                     <div className="device-m relative">
-                      <HoverVideo src="/images/v1.mp4" poster="" />
+                      <VideoCard src="/images/v1.mp4" controlsAlign="left" />
                     </div>
                   </motion.div>
-                  <motion.div
-                    variants={cardItem}
-                    custom={0}
-                    className="device-frame"
-                  >
+
+                  <motion.div variants={cardItem} custom={0}>
                     <div className="device-m relative">
-                      <HoverVideo src="/images/v2.mp4" poster="" />
+                      <VideoCard src="/images/v2.mp4" />
                     </div>
                   </motion.div>
-                  <motion.div
-                    variants={cardItem}
-                    custom={4}
-                    className="device-frame"
-                  >
+
+                  <motion.div variants={cardItem} custom={4}>
                     <div className="device-m relative">
-                      <HoverVideo src="/images/v3.mp4" poster="" />
+                      <VideoCard src="/images/v3.mp4" />
                     </div>
                   </motion.div>
                 </motion.div>
 
-                {/* DESKTOP/TABLET stack */}
+                {/* DESKTOP stack */}
                 <motion.div
                   className="hidden md:block relative mx-auto h-[360px] lg:h-[440px]"
                   variants={cardsGroup}
@@ -332,30 +279,30 @@ export default function Hero() {
                   <motion.div
                     variants={cardItem}
                     custom={-8}
-                    className="absolute left-6 lg:left-10 top-2 rotate-[-8deg] device-frame float-soft z-10"
+                    className="absolute left-6 lg:left-10 top-2 rotate-[-8deg] float-soft z-10"
                   >
                     <div className="device relative">
-                      <HoverVideo src="/images/v1.mp4" poster="" />
+                      <VideoCard src="/images/v1.mp4" controlsAlign="left" />
                     </div>
                   </motion.div>
 
                   <motion.div
                     variants={cardItem}
                     custom={8}
-                    className="absolute right-6 lg:right-10 top-1 rotate-[8deg] device-frame float-soft z-10"
+                    className="absolute right-6 lg:right-10 top-1 rotate-[8deg] float-soft z-10"
                   >
                     <div className="device relative">
-                      <HoverVideo src="/images/v2.mp4" poster="" />
+                      <VideoCard src="/images/v2.mp4" />
                     </div>
                   </motion.div>
 
                   <motion.div
                     variants={cardItem}
                     custom={0}
-                    className="absolute left-1/2 -translate-x-1/2 top-8 device-frame ring-2 ring-white/50 shadow-xl z-20"
+                    className="absolute left-1/2 -translate-x-1/2 top-8 shadow-xl z-20"
                   >
                     <div className="device relative">
-                      <HoverVideo src="/images/v3.mp4" poster="" />
+                      <VideoCard src="/images/v3.mp4" />
                     </div>
                   </motion.div>
                 </motion.div>
@@ -364,18 +311,18 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* Modal mounted at root (via portal) so it sits over nav */}
-        <BookingModal
-          open={bookingOpen}
-          onClose={() => setBookingOpen(false)}
-          bookingUrl={BOOKING_URL}
-        />
-
         <style jsx global>{`
           :root {
             --brand-purple: #8a5cff;
             --brand-lilac: #b18cff;
             --brand-cyan: #3ac4ec;
+            --brand-gradient: linear-gradient(
+              100deg,
+              var(--brand-purple) 8%,
+              var(--brand-lilac) 28%,
+              var(--brand-cyan) 58%,
+              var(--brand-purple) 86%
+            );
           }
 
           .btn-base {
@@ -395,19 +342,14 @@ export default function Hero() {
             }
           }
 
-          .text-shine {
-            background-image: linear-gradient(
-              100deg,
-              var(--brand-purple) 8%,
-              var(--brand-lilac) 28%,
-              var(--brand-cyan) 58%,
-              var(--brand-purple) 86%
-            );
+          .text-shine,
+          .text-gradient {
+            background-image: var(--brand-gradient);
             background-size: 200% auto;
-            animation: shine 2.6s linear infinite;
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
+            animation: shine 2.6s linear infinite;
           }
           @keyframes shine {
             to {
@@ -416,13 +358,7 @@ export default function Hero() {
           }
 
           .btn-gradient {
-            background-image: linear-gradient(
-              100deg,
-              var(--brand-purple) 0%,
-              var(--brand-lilac) 35%,
-              var(--brand-cyan) 70%,
-              var(--brand-purple) 100%
-            );
+            background-image: var(--brand-gradient);
             background-size: 200% auto;
             transition: background-position 0.6s ease, box-shadow 0.25s ease,
               transform 0.12s ease;
@@ -445,32 +381,34 @@ export default function Hero() {
             inset: 0;
             border-radius: 9999px;
             padding: 1px;
-            background-image: linear-gradient(
-              100deg,
-              var(--brand-purple) 0%,
-              var(--brand-lilac) 35%,
-              var(--brand-cyan) 70%,
-              var(--brand-purple) 100%
-            );
+            background-image: var(--brand-gradient);
             -webkit-mask: linear-gradient(#fff 0 0) content-box,
               linear-gradient(#fff 0 0);
             -webkit-mask-composite: xor;
             mask-composite: exclude;
             z-index: -1;
+            background-size: 200% auto;
+            animation: shine 2.6s linear infinite;
           }
 
-          .text-gradient {
-            background-image: linear-gradient(
-              100deg,
-              var(--brand-purple),
-              var(--brand-lilac),
-              var(--brand-cyan),
-              var(--brand-purple)
-            );
-            background-size: 200% auto;
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent.;
+          /* Remove video frame borders */
+          .device-frame,
+          .device-frame-mobile {
+            padding: 0;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+          }
+
+          .device,
+          .device-m {
+            --device-ar: 9 / 19;
+            position: relative;
+            width: clamp(120px, 11vw, 160px);
+            aspect-ratio: var(--device-ar);
+            border-radius: 1.1rem;
+            overflow: hidden;
           }
 
           .float-soft {
@@ -483,72 +421,6 @@ export default function Hero() {
             }
             50% {
               transform: translateY(-10px) rotate(var(--tw-rotate));
-            }
-          }
-
-          .device-frame {
-            padding: 6px;
-            border-radius: 1.4rem;
-            background: linear-gradient(
-              135deg,
-              rgba(255, 255, 255, 0.85),
-              rgba(255, 255, 255, 0.25)
-            );
-            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25),
-              inset 0 1px 1px rgba(255, 255, 255, 0.35);
-            backdrop-filter: blur(3px);
-          }
-          .device {
-            --device-ar: 9 / 19;
-            position: relative;
-            width: clamp(120px, 11vw, 160px);
-            aspect-ratio: var(--device-ar);
-            border-radius: 1.1rem;
-            overflow: hidden;
-          }
-          .device-m {
-            position: relative;
-            width: clamp(84px, 26vw, 110px);
-            aspect-ratio: 9 / 18;
-            border-radius: 1.1rem;
-            overflow: hidden;
-          }
-
-          .hero {
-            --curve-x: 2vw;
-            --curve-y: -1vh;
-            --curve-scale: 1;
-          }
-          .curve-pos {
-            transform: translate(var(--curve-x), var(--curve-y))
-              scale(var(--curve-scale));
-            transform-origin: center;
-          }
-          @media (min-width: 640px) {
-            .hero {
-              --curve-x: 6vw;
-              --curve-y: -1vh;
-            }
-          }
-          @media (min-width: 1024px) {
-            .hero {
-              --curve-x: 18vw;
-              --curve-y: -3vh;
-              --curve-scale: 1.04;
-            }
-          }
-          @media (min-width: 1280px) {
-            .hero {
-              --curve-x: 14vw;
-              --curve-y: -2vh;
-              --curve-scale: 1;
-            }
-          }
-          @media (min-width: 1536px) {
-            .hero {
-              --curve-x: 0vw;
-              --curve-y: -5vh;
-              --curve-scale: 1;
             }
           }
         `}</style>

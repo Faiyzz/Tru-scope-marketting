@@ -331,6 +331,7 @@ export default function PredictableGrowthSection({
                     viewport={{ once: true, amount: 0.35 }}
                     className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-20"
                   >
+                    {/* Desktop badge (existing) */}
                     <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
                       <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
                         <span className="text-sm font-bold text-white">
@@ -338,6 +339,14 @@ export default function PredictableGrowthSection({
                         </span>
                       </div>
                     </div>
+
+                    {/* Mobile animated number badge (NEW) */}
+                    <div className="md:hidden mb-2">
+                      <AnimatedNumberBadge
+                        n={loading ? idx + 1 : (s as Step).id}
+                      />
+                    </div>
+
                     <div className="ml-0 md:ml-2">
                       <h3 className="text-base md:text-lg font-semibold text-slate-900">
                         {loading ? shimmerLine(90, 140) : (s as Step).title}
@@ -482,7 +491,7 @@ export default function PredictableGrowthSection({
       {/* LeadConnector script (loads once) */}
       <Script src={GHL_SCRIPT_SRC} strategy="afterInteractive" />
 
-      {/* Booking modal (tweak navOffsetPx if your navbar height differs) */}
+      {/* Booking modal */}
       <BookingModal
         open={bookingOpen}
         onClose={() => setBookingOpen(false)}
@@ -583,5 +592,76 @@ function shimmerBlock(w = 50, h = 18) {
       className="inline-block animate-pulse rounded bg-slate-200/80"
       style={{ width: w, height: h }}
     />
+  );
+}
+
+/* ---------- NEW: Animated number badge for mobile ---------- */
+function AnimatedNumberBadge({ n }: { n: number }) {
+  const id = React.useId(); // unique gradient id per instance
+
+  return (
+    <svg
+      width="36"
+      height="36"
+      viewBox="0 0 36 36"
+      aria-hidden="true"
+      role="img"
+    >
+      <defs>
+        {/* Animated stroke gradient (matches brand + timing used elsewhere) */}
+        <linearGradient id={`grad-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="var(--brand-purple, #8a5cff)">
+            <animate
+              attributeName="offset"
+              values="0;1;0"
+              dur="4.5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="50%" stopColor="var(--brand-cyan, #3ac4ec)">
+            <animate
+              attributeName="offset"
+              values="0.5;1;0.5"
+              dur="4.5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="100%" stopColor="var(--brand-lilac, #b18cff)">
+            <animate
+              attributeName="offset"
+              values="1;1;1"
+              dur="4.5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+        </linearGradient>
+      </defs>
+
+      {/* White chip base for contrast on any background */}
+      <circle cx="18" cy="18" r="17" fill="#fff" />
+      {/* Glowing animated gradient ring */}
+      <circle
+        cx="18"
+        cy="18"
+        r="16"
+        fill="none"
+        stroke={`url(#grad-${id})`}
+        strokeWidth="2.5"
+        strokeLinecap="round"
+        style={{ filter: "drop-shadow(0 0 8px rgba(58,196,236,0.35))" }}
+      />
+      {/* Number with gradient fill */}
+      <text
+        x="50%"
+        y="50%"
+        textAnchor="middle"
+        dominantBaseline="central"
+        fontWeight="800"
+        fontSize="14"
+        fill={`url(#grad-${id})`}
+      >
+        {n}
+      </text>
+    </svg>
   );
 }

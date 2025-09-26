@@ -2,14 +2,11 @@
 
 import React from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
-import type { LucideIcon } from "lucide-react";
-import { Target, Camera, Scissors, BarChart3 } from "lucide-react";
 
 /* --------- Condensed steps (4 cards) --------- */
 type Feature = {
   title: string;
   desc: string;
-  Icon: LucideIcon;
   side: "left" | "right";
 };
 
@@ -17,25 +14,21 @@ const FEATURES: Feature[] = [
   {
     title: "Strategy & Pillars",
     desc: "ICP research, content pillars, and a monthly roadmap aligned to outcomes. Hooks, outlines, scripts, and shot lists included.",
-    Icon: Target,
     side: "left",
   },
   {
     title: "Record & Collaborate",
     desc: "You record on your phone/camera using our guides, upload to Drive, and collaborate via private Slack + shared Notion dashboard.",
-    Icon: Camera,
     side: "right",
   },
   {
     title: "Editing & Thumbnails",
     desc: "Cuts, pacing, sound design, captions, tasteful motion graphics — plus scroll-stopping thumbnails and covers to lift CTR.",
-    Icon: Scissors,
     side: "left",
   },
   {
     title: "Posting & Analytics",
     desc: "Platform-aware posting, calendar scheduling, transparent reporting, and weekly iteration to scale what works.",
-    Icon: BarChart3,
     side: "right",
   },
 ];
@@ -63,8 +56,8 @@ export default function CallTeamSection() {
     let ro: ResizeObserver | null = null;
     if (typeof window !== "undefined" && "ResizeObserver" in window) {
       ro = new ResizeObserver(calc);
-      spineWrapRef.current && ro.observe(spineWrapRef.current);
-      highlightRef.current && ro.observe(highlightRef.current);
+      if (spineWrapRef.current) ro.observe(spineWrapRef.current);
+      if (highlightRef.current) ro.observe(highlightRef.current);
     }
     const onResize = () => calc();
     window.addEventListener("resize", onResize);
@@ -201,7 +194,7 @@ export default function CallTeamSection() {
                   )}
 
                   {/* Mobile: single column */}
-                  <div className="md:hidden  col-span-full">
+                  <div className="md:hidden col-span-full">
                     <Card item={item} align="center" />
                   </div>
                 </motion.div>
@@ -275,8 +268,6 @@ function Card({
   item: Feature;
   align: "left" | "right" | "center";
 }) {
-  const { Icon } = item;
-
   const justify =
     align === "left"
       ? "justify-start"
@@ -285,6 +276,16 @@ function Card({
       : "justify-center";
   const textAlign =
     align === "center" ? "center" : align === "left" ? "left" : "right";
+
+  // Map titles to gradient icon variants (keeps your Feature structure untouched)
+  const which =
+    item.title === "Strategy & Pillars"
+      ? "target"
+      : item.title === "Record & Collaborate"
+      ? "camera"
+      : item.title === "Editing & Thumbnails"
+      ? "scissors"
+      : "barchart";
 
   return (
     <div className="relative w-full">
@@ -301,10 +302,7 @@ function Card({
         >
           <div className={`mb-4 flex items-center ${justify}`}>
             <div className="bg-white size-12 rounded-full grid place-items-center shadow-sm ring-1 ring-black/10">
-              <Icon
-                className="h-6 w-6 text-[color:var(--brand-cyan)]"
-                strokeWidth={2.5}
-              />
+              <GradientIcon which={which} />
             </div>
           </div>
 
@@ -317,5 +315,99 @@ function Card({
         </div>
       </div>
     </div>
+  );
+}
+
+/* ---------- Animated Gradient Icons (SVG stroke gradients) ---------- */
+/** which: 'target' | 'camera' | 'scissors' | 'barchart' */
+function GradientIcon({
+  which,
+}: {
+  which: "target" | "camera" | "scissors" | "barchart";
+}) {
+  const id = React.useId();
+
+  const strokeProps = {
+    fill: "none",
+    stroke: `url(#grad-${id})`,
+    strokeWidth: 2.2,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+  };
+
+  let icon: React.ReactNode = null;
+  switch (which) {
+    case "target":
+      icon = (
+        <>
+          <circle cx="12" cy="12" r="9" {...strokeProps} />
+          <circle cx="12" cy="12" r="5" {...strokeProps} />
+          <circle cx="12" cy="12" r="1" {...strokeProps} />
+        </>
+      );
+      break;
+    case "camera":
+      icon = (
+        <>
+          <rect x="3" y="7" width="18" height="12" rx="2" {...strokeProps} />
+          <path d="M7 7l2-2h6l2 2" {...strokeProps} />
+          <circle cx="12" cy="13" r="3.5" {...strokeProps} />
+        </>
+      );
+      break;
+    case "scissors":
+      icon = (
+        <>
+          <circle cx="6" cy="6.5" r="2.5" {...strokeProps} />
+          <circle cx="6" cy="17.5" r="2.5" {...strokeProps} />
+          <path d="M8 8l8 8" {...strokeProps} />
+          <path d="M16 8l-3.5 3.5" {...strokeProps} />
+          <path d="M8 16l3.5-3.5" {...strokeProps} />
+        </>
+      );
+      break;
+    case "barchart":
+      icon = (
+        <>
+          <path d="M4 20h16" {...strokeProps} />
+          <rect x="6" y="11" width="3" height="7" {...strokeProps} />
+          <rect x="11" y="7" width="3" height="11" {...strokeProps} />
+          <rect x="16" y="13" width="3" height="5" {...strokeProps} />
+        </>
+      );
+      break;
+  }
+
+  return (
+    <svg
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+      role="img"
+    >
+      <defs>
+        <linearGradient id={`grad-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stopColor="var(--brand-purple, #8a5cff)">
+            <animate
+              attributeName="offset"
+              values="0;1;0"
+              dur="4.5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="50%" stopColor="var(--brand-cyan, #3ac4ec)">
+            <animate
+              attributeName="offset"
+              values="0.5;1;0.5"
+              dur="4.5s"
+              repeatCount="indefinite"
+            />
+          </stop>
+          <stop offset="100%" stopColor="var(--brand-lilac, #b18cff)" />
+        </linearGradient>
+      </defs>
+      {icon}
+    </svg>
   );
 }

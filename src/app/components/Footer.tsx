@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import type { ReactNode } from "react";
 import { motion, Variants, easeOut } from "framer-motion";
 
@@ -30,7 +31,7 @@ export default function Footer() {
     },
   } as const;
 
-  // Socials (kept as is)
+  // Socials
   const socials = [
     {
       name: "Instagram",
@@ -101,128 +102,74 @@ export default function Footer() {
         >
           {/* Brand / About */}
           <motion.div variants={item}>
-            <Link href="/">
-              <img
+            <Link href="/" aria-label="TruScope Home" className="inline-block">
+              <Image
                 src="/images/logo.png"
                 alt="TruScope Logo"
-                className="h-auto w-auto -mt-13 -mb-7"
-                style={{ maxWidth: 140 }}
+                width={140}
+                height={40}
+                priority
+                className="-mt-3 -mb-2 h-auto w-auto"
               />
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
-              OurStudio is a digital agency UI / UX Design and Website
-              Development located in Ohio, United States of America.
+              TruScope is a full-stack growth partner dedicated to helping small
+              brands scale with confidence.
             </p>
             <p className="mt-6 text-xs text-slate-500">
               Copyright TruScope Studio
             </p>
           </motion.div>
 
-          {/* Sections (simple links – no mapping) */}
+          {/* Sections */}
           <motion.div variants={item}>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
               About us
             </h4>
             <ul className="mt-4 space-y-3 text-sm">
-              <motion.li variants={item}>
-                <Link
-                  href="/#services"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Services
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#callteam"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Our Process
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#testimonil"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Testimonials
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#faq"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  FAQ
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#reservation"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Contact us
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
+              {[
+                { href: "/#services", label: "Services" },
+                { href: "/#callteam", label: "Our Process" },
+                { href: "/#testimonil", label: "Testimonials" },
+                { href: "/#faq", label: "FAQ" },
+                { href: "/#reservation", label: "Contact us" },
+              ].map((l) => (
+                <motion.li key={l.label} variants={item}>
+                  <Link
+                    href={l.href}
+                    className="relative inline-block transition hover:text-white"
+                  >
+                    {l.label}
+                    <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out group-hover:w-full" />
+                  </Link>
+                </motion.li>
+              ))}
             </ul>
           </motion.div>
 
-          {/* Company (simple links – no mapping) */}
+          {/* Company */}
           <motion.div variants={item}>
             <h4 className="text-sm font-semibold uppercase tracking-wide text-slate-200">
               Services
             </h4>
             <ul className="mt-4 space-y-3 text-sm">
-              <motion.li variants={item}>
-                <Link
-                  href="/#services"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Video Content Creation
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#work"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Social Media Management
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#services"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Social Media Marketing
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#work"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Web Development
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
-              <motion.li variants={item}>
-                <Link
-                  href="/#reservation"
-                  className="relative inline-block transition hover:text-white"
-                >
-                  Contact Us
-                  <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out hover:w/full" />
-                </Link>
-              </motion.li>
+              {[
+                { href: "/#services", label: "Video Content Creation" },
+                { href: "/#work", label: "Social Media Management" },
+                { href: "/#services", label: "Social Media Marketing" },
+                { href: "/#work", label: "Web Development" },
+                { href: "/#reservation", label: "Contact Us" },
+              ].map((l) => (
+                <motion.li key={l.label} variants={item}>
+                  <Link
+                    href={l.href}
+                    className="relative inline-block transition hover:text-white"
+                  >
+                    {l.label}
+                    <span className="block h-px w-0 bg-white/40 transition-all duration-300 ease-out group-hover:w-full" />
+                  </Link>
+                </motion.li>
+              ))}
             </ul>
           </motion.div>
 
@@ -275,7 +222,7 @@ export default function Footer() {
   );
 }
 
-/* ---------- Button wrapper ---------- */
+/* ---------- Button wrapper with animated gradient ---------- */
 function SocialButton({
   href,
   label,
@@ -295,17 +242,40 @@ function SocialButton({
       target="_blank"
       rel="noopener noreferrer"
       aria-label={label}
-      className="group grid h-10 w-10 place-items-center rounded-full text-white bg-white/10 ring-1 ring-white/15 transition-transform duration-200 hover:scale-105 hover:bg-white/15 hover:ring-white/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+      className="group relative grid h-10 w-10 place-items-center"
     >
+      {/* Animated gradient halo */}
       <span
-        className="pointer-events-none block"
+        aria-hidden
+        className="absolute inset-0 rounded-full animate-gradient-rotate"
         style={{
-          width: 20,
-          height: 20,
-          transform: `translate(${ox}px, ${oy}px)`,
+          background:
+            "conic-gradient(from 0deg, #60a5fa, #22d3ee, #34d399, #a78bfa, #60a5fa)",
+          filter: "blur(6px)",
+          opacity: 0.9,
         }}
-      >
-        {children}
+      />
+      {/* Gradient fill layer (solid, not blurred) */}
+      <span
+        aria-hidden
+        className="absolute inset-0 rounded-full animate-gradient-rotate"
+        style={{
+          background:
+            "conic-gradient(from 0deg, #60a5fa, #22d3ee, #34d399, #a78bfa, #60a5fa)",
+        }}
+      />
+      {/* Inner circle for contrast */}
+      <span className="relative z-[1] grid h-[2.25rem] w-[2.25rem] place-items-center rounded-full bg-[#0F1527] ring-1 ring-white/20 transition-transform duration-200 group-hover:scale-105 group-hover:ring-white/40">
+        <span
+          className="pointer-events-none block text-white"
+          style={{
+            width: 20,
+            height: 20,
+            transform: `translate(${ox}px, ${oy}px)`,
+          }}
+        >
+          {children}
+        </span>
       </span>
     </a>
   );
@@ -335,6 +305,7 @@ function InstagramIcon() {
     </svg>
   );
 }
+
 function FacebookIcon() {
   return (
     <svg
@@ -345,12 +316,13 @@ function FacebookIcon() {
       aria-hidden="true"
     >
       <path
-        d="M15 8h-2a1 1 0 0 0-1 1v2h3l-.7 3H12v6H9v-6H7v-3h2v-1.5A3.5 3.5 0 0 1 12.5 5H15v3z"
+        d="M14.5 8H13a1 1 0 0 0-1 1v2h2.7l-.6 3H12v6H9.8v-6H8v-3h1.8V9.4A3.4 3.4 0 0 1 13.2 6h1.3V8z"
         fill="currentColor"
       />
     </svg>
   );
 }
+
 function TiktokIcon() {
   return (
     <svg
@@ -361,15 +333,13 @@ function TiktokIcon() {
       aria-hidden="true"
     >
       <path
-        d="M14 4v5.5c0 3.6-2.9 4.2-4.2 3.8a3.2 3.2 0 1 0 3.2 3.2V6.2l5.5 1.8v3.3c1.6 1 3 1.5 4.5 1.7"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+        d="M14 3v3.2c0 1.7 1.6 3.6 4.6 3.9V13c-1.9-.1-3.6-.8-4.6-1.7v4.9A5.2 5.2 0 1 1 9.4 11h0c.6 0 1.2.1 1.7.3v2.9a2.5 2.5 0 1 0 1.7 2.4V3H14z"
+        fill="currentColor"
       />
     </svg>
   );
 }
+
 function YoutubeIcon() {
   return (
     <svg
@@ -380,10 +350,10 @@ function YoutubeIcon() {
       aria-hidden="true"
     >
       <rect
-        x="3"
-        y="7"
-        width="18"
-        height="10"
+        x="2.5"
+        y="6.5"
+        width="19"
+        height="11"
         rx="3"
         stroke="currentColor"
         strokeWidth="2"
