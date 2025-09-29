@@ -176,7 +176,7 @@ export default function Hero() {
 
         {/* CONTENT WRAPPER */}
         <div className="relative flex min-h-[82vh] items-center pt-[clamp(88px,10vh,128px)]">
-          <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+<div className="mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 py-8 md:py-10 lg:py-12 md:place-items-center">
               {/* LEFT (text) */}
               <motion.header
