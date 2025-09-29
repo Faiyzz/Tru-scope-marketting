@@ -74,14 +74,9 @@ export default function FloatingNavbar({
               aria-label={`${brand} home`}
               className="inline-flex items-center focus-gradient"
             >
-              <Image
-                src={logoSrc}
-                alt={brand}
-                width={100}
-                height={100}
-                priority
-                className="h-auto w-auto"
-              />
+             <h1 className="text-gradient font-extrabold text-3xl sm:text-4xl tracking-tight">
+  TruScope
+</h1>
             </Link>
 
             {/* Desktop menu */}

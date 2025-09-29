@@ -103,14 +103,9 @@ export default function Footer() {
           {/* Brand / About */}
           <motion.div variants={item}>
             <Link href="/" aria-label="TruScope Home" className="inline-block">
-              <Image
-                src="/images/logo.png"
-                alt="TruScope Logo"
-                width={140}
-                height={40}
-                priority
-                className="-mt-3 -mb-2 h-auto w-auto"
-              />
+            <h1 className="text-gradient font-extrabold text-3xl sm:text-4xl tracking-tight">
+  TruScope
+</h1>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
               TruScope is a full-stack growth partner dedicated to helping small
