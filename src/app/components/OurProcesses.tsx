@@ -2,6 +2,7 @@
 "use client";
 
 import React from "react";
+import { createPortal } from "react-dom";
 import {
   motion,
   useScroll,
@@ -16,9 +17,6 @@ const GHL_WIDGET_URL =
   "https://api.leadconnectorhq.com/widget/booking/Ky3SDrjMdqqFvoZtt5m9";
 const GHL_SCRIPT_SRC = "https://link.msgsndr.com/js/form_embed.js";
 
-/* ---------------- Theme ---------------- */
-const ACCENT = "#3ac4ec";
-
 /* ---------------- Types ---------------- */
 type Step = { id: number; title: string; blurb: string };
 type Metric = { id: string; value: number; label: string };
@@ -32,6 +30,8 @@ type Props = {
   onCtaClick?: () => void;
   initialLoadingMs?: number;
 };
+
+/* ---------------- Portal Modal (fixed, page-locked) ---------------- */
 function BookingModal({
   open,
   onClose,
@@ -45,52 +45,63 @@ function BookingModal({
   navOffsetPx?: number;
   title?: string;
 }) {
-  // Lock background (page) scroll when modal is open
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+
+  // Lock page scroll + make app inert for a11y/UX while open (no `any` casts)
   React.useEffect(() => {
     if (!open) return;
-    const prevOverflow = document.body.style.overflow;
-    const prevTouch = document.body.style.touchAction;
-    document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none"; // iOS rubber-band fix
+
+    const prevHtmlOverflow = document.documentElement.style.overflow;
+    const appRoot = (document.getElementById("__next") ||
+      document.body.firstElementChild) as HTMLElement | null;
+
+    document.documentElement.style.overflow = "hidden";
+    if (appRoot) {
+      // attribute approach keeps TS happy and works broadly
+      appRoot.setAttribute("inert", "");
+      appRoot.setAttribute("aria-hidden", "true");
+    }
+
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
+
     return () => {
-      document.body.style.overflow = prevOverflow;
-      document.body.style.touchAction = prevTouch;
+      document.documentElement.style.overflow = prevHtmlOverflow;
+      if (appRoot) {
+        appRoot.removeAttribute("inert");
+        appRoot.removeAttribute("aria-hidden");
+      }
       document.removeEventListener("keydown", onKey);
     };
   }, [open, onClose]);
 
-  if (!open) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  const modal = (
     <div
-      className="fixed inset-0 z-[9999]"
+      className="fixed inset-0 z-[2147483647]"
       role="dialog"
       aria-modal="true"
       aria-label={title}
     >
-      {/* Backdrop: blur + dim the entire site */}
+      {/* Backdrop: blur + dim; click to close */}
       <div
-        className="absolute inset-0 backdrop-blur-sm bg-black/50"
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
-      {/* Scrollable overlay: if dialog + padding exceed viewport, this scrolls */}
+      {/* Scrollable overlay for long content */}
       <div
-        className="absolute inset-0 flex items-start justify-center
-                   overflow-y-auto overscroll-contain
-                   p-4 sm:p-6 lg:p-8"
+        className="absolute inset-0 flex items-start justify-center overflow-y-auto overscroll-contain p-4 sm:p-6 lg:p-8"
         style={{ paddingTop: navOffsetPx + 16 }}
         onClick={onClose}
       >
-        {/* Dialog (stop click so it doesn’t close) */}
+        {/* Dialog card */}
         <div
           onClick={(e) => e.stopPropagation()}
-          className="relative w-full max-w-[1100px] bg-white shadow-2xl
-                     rounded-2xl ring-1 ring-black/10 overflow-hidden"
+          className="relative w-full max-w-[1100px] bg-white shadow-2xl rounded-2xl ring-1 ring-black/10 overflow-hidden"
           style={{
-            // Cap height to viewport; overlay handles any extra via scroll
             height: "min(86svh, 900px)",
             maxHeight:
               "calc(100svh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 2rem)",
@@ -116,7 +127,7 @@ function BookingModal({
                 title="GHL Booking"
                 src={src}
                 className="block w-full h-full rounded-xl"
-                style={{ border: "none" }}
+                style={{ border: "none", background: "#ffffff" }}
                 scrolling="auto"
                 loading="lazy"
               />
@@ -129,6 +140,9 @@ function BookingModal({
       </div>
     </div>
   );
+
+  // Render OUTSIDE animated/transform ancestors so `fixed` works correctly
+  return createPortal(modal, document.body);
 }
 
 /* ---------------- Component ---------------- */
@@ -483,7 +497,7 @@ export default function PredictableGrowthSection({
           background-position: 100% center;
         }
 
-        /* ✅ Mobile-only: continuous shine animation */
+        /* Mobile-only: continuous shine animation */
         @media (hover: none) and (pointer: coarse) {
           .btn-gradient {
             animation: shine 2.6s linear infinite;
@@ -524,7 +538,7 @@ export default function PredictableGrowthSection({
           box-shadow: 0 20px 40px -15px rgba(58, 196, 236, 0.4);
         }
 
-        /* ♿ Respect reduced motion */
+        /* Respect reduced motion */
         @media (prefers-reduced-motion: reduce) {
           .btn-gradient {
             animation: none !important;
