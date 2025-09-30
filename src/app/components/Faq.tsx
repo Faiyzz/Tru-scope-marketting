@@ -137,21 +137,25 @@ export default function FAQSection() {
                     aria-controls={contentId}
                     className="flex w-full items-center gap-3 text-left"
                     whileTap={{ scale: 0.985 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 400,
-                      damping: 24,
-                    }}
+                    transition={{ type: "spring", stiffness: 400, damping: 24 }}
                   >
-                    {/* Left: numbered gradient badge */}
-                    <span className="relative grid w-8 h-8 shrink-0 place-items-center rounded-full text-white step-badge">
-                      <span className="text-[11px] font-bold leading-none">
-                        {(idx + 1).toString().padStart(2, "0")}
-                      </span>
+                    {/* Number badge */}
+                    <span
+                      className="relative grid w-8 h-8 shrink-0 place-items-center rounded-full text-white font-bold text-[11px] leading-none"
+                      style={{
+                        background: isOpen
+                          ? "linear-gradient(135deg, var(--brand-purple), var(--brand-lilac), var(--brand-cyan))"
+                          : "#8A5CFF",
+                        boxShadow: isOpen
+                          ? "0 12px 28px -12px rgba(58, 196, 236, 0.45)"
+                          : "none",
+                      }}
+                    >
+                      {(idx + 1).toString().padStart(2, "0")}
                     </span>
 
                     {/* Question text */}
-                    <span className="flex-1 min-w-0 text-sm sm:text-base font-medium text-gray-800 leading-snug text-pretty break-words">
+                    <span className="flex-1 min-w-0 text-sm sm:text-base font-medium text-gray-800 leading-snug break-words">
                       {item.q}
                     </span>
 
@@ -206,15 +210,6 @@ export default function FAQSection() {
           --brand-purple: #8a5cff;
           --brand-lilac: #b18cff;
           --brand-cyan: #3ac4ec;
-        }
-        .step-badge {
-          background-image: linear-gradient(
-            135deg,
-            var(--brand-purple),
-            var(--brand-lilac),
-            var(--brand-cyan)
-          );
-          box-shadow: 0 12px 28px -12px rgba(58, 196, 236, 0.45);
         }
       `}</style>
     </motion.section>

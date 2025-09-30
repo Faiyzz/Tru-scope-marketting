@@ -103,9 +103,9 @@ export default function Footer() {
           {/* Brand / About */}
           <motion.div variants={item}>
             <Link href="/" aria-label="TruScope Home" className="inline-block">
-            <h1 className="text-gradient font-extrabold text-3xl sm:text-4xl tracking-tight">
-  TruScope
-</h1>
+              <h1 className="text-gradient font-extrabold text-3xl sm:text-4xl tracking-tight">
+                TruScope
+              </h1>
             </Link>
             <p className="mt-4 text-sm leading-relaxed text-slate-400">
               TruScope is a full-stack growth partner dedicated to helping small
@@ -124,7 +124,7 @@ export default function Footer() {
             <ul className="mt-4 space-y-3 text-sm">
               {[
                 { href: "/#services", label: "Services" },
-                { href: "/#callteam", label: "Our Process" },
+                { href: "/#process", label: "Our Process" },
                 { href: "/#testimonil", label: "Testimonials" },
                 { href: "/#faq", label: "FAQ" },
                 { href: "/#reservation", label: "Contact us" },

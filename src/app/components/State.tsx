@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
 
 /* ---------- Types ---------- */
 export type StatItem = {
@@ -129,6 +130,17 @@ export default function StatsSection({
       aria-label="Key performance statistics"
     >
       <div className="mx-auto max-w-7xl px-4">
+        {/* New headline above analytics */}
+        <motion.h1
+          id="stats-heading"
+          className="mb-8 md:mb-10 text-center font-extrabold tracking-tight leading-[0.98] text-[clamp(28px,6vw,56px)] text-slate-900"
+          initial={{ opacity: 0, y: 12 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.55, ease: "easeOut" }}
+        >
+          Proven <span className="text-[#8A5CFF]">Results</span>
+        </motion.h1>
+
         <ul
           className={[
             "grid grid-cols-2 gap-y-10 md:grid-cols-4 md:gap-y-12",

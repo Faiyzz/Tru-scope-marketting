@@ -16,7 +16,9 @@ const ACCENT = "#3ac4ec";
 export default function ReservationSection() {
   const [mounted, setMounted] = useState(false);
   const [iframeLoaded, setIframeLoaded] = useState(false);
-  const [meetingType, setMeetingType] = useState<"phone" | "zoom">("phone");
+
+  // ✅ Start on "zoom"
+  const [meetingType, setMeetingType] = useState<"phone" | "zoom">("zoom");
 
   const iframeId = useMemo(
     () => `ghl_widget_${Math.random().toString(36).slice(2)}`,
@@ -43,7 +45,7 @@ export default function ReservationSection() {
   return (
     <section
       id="reservation"
-      className="relative w-full overflow-hidden bg-white py-8 sm:py-10 mt-30"
+      className="relative w-full overflow-hidden bg-white py-8 sm:py-10 "
     >
       {/* soft aurora bg */}
       <motion.div
@@ -107,8 +109,9 @@ export default function ReservationSection() {
                 30 min
               </div>
               <div className="flex items-center gap-2 text-sm">
+                {/* order of mention is neutral; preference is shown below */}
                 <Phone className="h-4 w-4 text-slate-500" />
-                <span>Phone call</span>
+                <span>Phone</span>
                 <span className="text-slate-400">or</span>
                 <Video className="h-4 w-4 text-slate-500" />
                 <span>Zoom</span>
@@ -149,24 +152,14 @@ export default function ReservationSection() {
               <h3 className="text-base font-semibold text-slate-900">
                 Select a Time
               </h3>
-              {/* Segmented toggle: Phone / Zoom */}
-              <div className="flex items-center rounded-full border border-slate-200 p-1 text-xs font-medium shadow-sm">
-                <button
-                  type="button"
-                  onClick={() => setMeetingType("phone")}
-                  className={[
-                    "px-3 py-1.5 rounded-full transition",
-                    meetingType === "phone"
-                      ? "bg-slate-900 text-white"
-                      : "text-slate-700 hover:bg-slate-100",
-                  ].join(" ")}
-                  aria-pressed={meetingType === "phone"}
-                >
-                  <span className="inline-flex items-center gap-1.5">
-                    <Phone className="h-3.5 w-3.5" />
-                    Phone
-                  </span>
-                </button>
+
+              {/* Segmented toggle: Zoom (default) / Phone */}
+              <div
+                className="flex items-center rounded-full border border-slate-200 p-1 text-xs font-medium shadow-sm"
+                role="tablist"
+                aria-label="Meeting preference"
+              >
+                {/* ✅ Zoom first & selected by default */}
                 <button
                   type="button"
                   onClick={() => setMeetingType("zoom")}
@@ -177,10 +170,30 @@ export default function ReservationSection() {
                       : "text-slate-700 hover:bg-slate-100",
                   ].join(" ")}
                   aria-pressed={meetingType === "zoom"}
+                  role="tab"
                 >
                   <span className="inline-flex items-center gap-1.5">
                     <Video className="h-3.5 w-3.5" />
                     Zoom
+                  </span>
+                </button>
+
+                {/* 👉 Swipes to Phone */}
+                <button
+                  type="button"
+                  onClick={() => setMeetingType("phone")}
+                  className={[
+                    "px-3 py-1.5 rounded-full transition",
+                    meetingType === "phone"
+                      ? "bg-slate-900 text-white"
+                      : "text-slate-700 hover:bg-slate-100",
+                  ].join(" ")}
+                  aria-pressed={meetingType === "phone"}
+                  role="tab"
+                >
+                  <span className="inline-flex items-center gap-1.5">
+                    <Phone className="h-3.5 w-3.5" />
+                    Phone
                   </span>
                 </button>
               </div>
@@ -215,19 +228,19 @@ export default function ReservationSection() {
                     title="GHL Scheduling"
                     id={iframeId}
                     src={iframeSrc}
-                    scrolling="yes" // ← allow internal scrollbars
+                    scrolling="yes"
                     className={`w-full rounded-xl transition-opacity duration-500 ${
                       iframeLoaded ? "opacity-100" : "opacity-0"
-                    } min-h-[620px]`} // sensible fallback height
-                    style={{ border: "none" }} // no overflow:hidden so scrollbars can appear
+                    } min-h-[620px]`}
+                    style={{ border: "none" }}
                     onLoad={() => setIframeLoaded(true)}
                   />
-                  {/* Load LeadConnector embed script once */}
                   <Script src={GHL_SCRIPT_SRC} strategy="afterInteractive" />
                 </>
               )}
             </div>
 
+            {/* ✅ Preference on bottom shows Zoom by default */}
             <div className="mt-2 flex items-center justify-between">
               <p className="text-[11px] text-slate-400">Powered by GHL</p>
               <p className="text-[11px] text-slate-500">

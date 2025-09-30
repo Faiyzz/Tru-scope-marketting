@@ -32,8 +32,6 @@ type Props = {
   onCtaClick?: () => void;
   initialLoadingMs?: number;
 };
-
-/* ---------------- Improved Modal ---------------- */
 function BookingModal({
   open,
   onClose,
@@ -47,15 +45,19 @@ function BookingModal({
   navOffsetPx?: number;
   title?: string;
 }) {
+  // Lock background (page) scroll when modal is open
   React.useEffect(() => {
     if (!open) return;
+    const prevOverflow = document.body.style.overflow;
+    const prevTouch = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none"; // iOS rubber-band fix
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     document.addEventListener("keydown", onKey);
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     return () => {
+      document.body.style.overflow = prevOverflow;
+      document.body.style.touchAction = prevTouch;
       document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = prev;
     };
   }, [open, onClose]);
 
@@ -63,55 +65,66 @@ function BookingModal({
 
   return (
     <div
-      aria-modal
+      className="fixed inset-0 z-[9999]"
       role="dialog"
-      className="fixed inset-0 z-[9999] flex items-start justify-center"
-      style={{ paddingTop: navOffsetPx + 16 }}
+      aria-modal="true"
+      aria-label={title}
     >
-      {/* Backdrop → only blur, no opaque color */}
-      <button
-        aria-label="Close booking"
+      {/* Backdrop: blur + dim the entire site */}
+      <div
+        className="absolute inset-0 backdrop-blur-sm bg-black/50"
         onClick={onClose}
-        className="absolute inset-0 backdrop-blur-md"
       />
 
-      {/* Dialog */}
+      {/* Scrollable overlay: if dialog + padding exceed viewport, this scrolls */}
       <div
-        className="
-          relative mx-4 w-full
-          max-w-[1100px] rounded-2xl bg-white shadow-2xl ring-1 ring-black/10
-        "
+        className="absolute inset-0 flex items-start justify-center
+                   overflow-y-auto overscroll-contain
+                   p-4 sm:p-6 lg:p-8"
+        style={{ paddingTop: navOffsetPx + 16 }}
+        onClick={onClose}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between rounded-t-2xl border-b px-5 py-3">
-          <h4 className="text-base font-semibold text-slate-900">{title}</h4>
-          <button
-            onClick={onClose}
-            className="rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
-            aria-label="Close"
-          >
-            ✕
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="px-3 pb-3 pt-3">
-          <div
-            className="relative w-full overflow-auto rounded-xl ring-1 ring-black/5"
-            style={{ height: "min(85vh, 900px)" }}
-          >
-            <iframe
-              title="GHL Booking"
-              id={`ghl_popup_${Math.random().toString(36).slice(2)}`}
-              src={src}
-              scrolling="no"
-              className="h-full w-full rounded-xl"
-              style={{ border: "none", overflow: "hidden", display: "block" }}
-            />
+        {/* Dialog (stop click so it doesn’t close) */}
+        <div
+          onClick={(e) => e.stopPropagation()}
+          className="relative w-full max-w-[1100px] bg-white shadow-2xl
+                     rounded-2xl ring-1 ring-black/10 overflow-hidden"
+          style={{
+            // Cap height to viewport; overlay handles any extra via scroll
+            height: "min(86svh, 900px)",
+            maxHeight:
+              "calc(100svh - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px) - 2rem)",
+            width: "min(96vw, 1100px)",
+          }}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between border-b px-5 py-3">
+            <h4 className="text-base font-semibold text-slate-900">{title}</h4>
+            <button
+              onClick={onClose}
+              aria-label="Close booking"
+              className="rounded-md px-2 py-1 text-slate-500 hover:bg-slate-100 hover:text-slate-700"
+            >
+              ✕
+            </button>
           </div>
-          <p className="mt-2 text-center text-[11px] text-slate-400">
-            Powered by GHL
-          </p>
+
+          {/* Body (iframe fills remaining space) */}
+          <div className="px-3 pb-3 pt-3 h-[calc(100%-52px)]">
+            <div className="relative w-full h-full overflow-hidden rounded-xl ring-1 ring-black/5">
+              <iframe
+                title="GHL Booking"
+                src={src}
+                className="block w-full h-full rounded-xl"
+                style={{ border: "none" }}
+                scrolling="auto"
+                loading="lazy"
+              />
+            </div>
+            <p className="mt-2 text-center text-[11px] text-slate-400">
+              Powered by GHL
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -331,7 +344,7 @@ export default function PredictableGrowthSection({
                     viewport={{ once: true, amount: 0.35 }}
                     className="group relative rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-md md:pl-20"
                   >
-                    {/* Desktop badge (existing) */}
+                    {/* Desktop badge */}
                     <div className="pointer-events-none absolute left-7 top-5 hidden -translate-x-1/2 md:block">
                       <div className="grid h-9 w-9 place-items-center rounded-full shadow-md step-badge">
                         <span className="text-sm font-bold text-white">
@@ -340,7 +353,7 @@ export default function PredictableGrowthSection({
                       </div>
                     </div>
 
-                    {/* Mobile animated number badge (NEW) */}
+                    {/* Mobile animated number badge */}
                     <div className="md:hidden mb-2">
                       <AnimatedNumberBadge
                         n={loading ? idx + 1 : (s as Step).id}
@@ -393,7 +406,7 @@ export default function PredictableGrowthSection({
                     onClick={handleCta}
                     className="group btn-base btn-gradient w-full text-white shadow-md hover:shadow-lg"
                   >
-                    <span className="relative">Start My Strategy</span>
+                    <span className="relative">Start My Free Strategy</span>
                     <svg
                       className="relative h-4 w-4 transition-transform group-hover:translate-x-0.5"
                       viewBox="0 0 20 20"
@@ -422,6 +435,8 @@ export default function PredictableGrowthSection({
           --brand-lilac: var(--brand-lilac, #b18cff);
           --brand-cyan: var(--brand-cyan, #3ac4ec);
         }
+
+        /* Text gradient (static) */
         .text-gradient {
           background-image: linear-gradient(
             100deg,
@@ -435,6 +450,7 @@ export default function PredictableGrowthSection({
           background-clip: text;
           color: transparent;
         }
+
         .btn-base {
           height: 44px;
           display: inline-flex;
@@ -446,6 +462,8 @@ export default function PredictableGrowthSection({
           font-size: 0.875rem;
           line-height: 1;
         }
+
+        /* Gradient button */
         .btn-gradient {
           background-image: linear-gradient(
             100deg,
@@ -455,12 +473,31 @@ export default function PredictableGrowthSection({
             var(--brand-purple) 100%
           );
           background-size: 200% auto;
+          background-position: 0% center; /* baseline */
           transition: background-position 0.6s ease, box-shadow 0.25s ease,
             transform 0.12s ease;
+          will-change: background-position;
         }
+        /* Desktop hover-only shine */
         .btn-gradient:hover {
           background-position: 100% center;
         }
+
+        /* ✅ Mobile-only: continuous shine animation */
+        @media (hover: none) and (pointer: coarse) {
+          .btn-gradient {
+            animation: shine 2.6s linear infinite;
+          }
+        }
+
+        /* Shine keyframes (shared) */
+        @keyframes shine {
+          to {
+            background-position: -200% center;
+          }
+        }
+
+        /* Rails + badges */
         .rail-base {
           background: linear-gradient(
             180deg,
@@ -485,6 +522,13 @@ export default function PredictableGrowthSection({
             var(--brand-cyan)
           );
           box-shadow: 0 20px 40px -15px rgba(58, 196, 236, 0.4);
+        }
+
+        /* ♿ Respect reduced motion */
+        @media (prefers-reduced-motion: reduce) {
+          .btn-gradient {
+            animation: none !important;
+          }
         }
       `}</style>
 
@@ -608,7 +652,6 @@ function AnimatedNumberBadge({ n }: { n: number }) {
       role="img"
     >
       <defs>
-        {/* Animated stroke gradient (matches brand + timing used elsewhere) */}
         <linearGradient id={`grad-${id}`} x1="0%" y1="0%" x2="100%" y2="0%">
           <stop offset="0%" stopColor="var(--brand-purple, #8a5cff)">
             <animate
@@ -637,9 +680,7 @@ function AnimatedNumberBadge({ n }: { n: number }) {
         </linearGradient>
       </defs>
 
-      {/* White chip base for contrast on any background */}
       <circle cx="18" cy="18" r="17" fill="#fff" />
-      {/* Glowing animated gradient ring */}
       <circle
         cx="18"
         cy="18"
@@ -650,7 +691,6 @@ function AnimatedNumberBadge({ n }: { n: number }) {
         strokeLinecap="round"
         style={{ filter: "drop-shadow(0 0 8px rgba(58,196,236,0.35))" }}
       />
-      {/* Number with gradient fill */}
       <text
         x="50%"
         y="50%"

@@ -1,88 +1,172 @@
+// app/components/Hero.tsx
 "use client";
 
-import React, { useRef, useState, useCallback } from "react";
+import React, { useRef, useState, useCallback, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence, Variants, easeOut } from "framer-motion";
-import { ArrowRight, PhoneCall, Volume2, VolumeX } from "lucide-react";
-import Image from "next/image";
+import {
+  ArrowRight,
+  PhoneCall,
+  Volume2,
+  VolumeX,
+  X as CloseIcon,
+} from "lucide-react";
 import Link from "next/link";
 
-/* --- video card: hover play + click to pin + mute toggle --- */
+/* --- video card: first-frame poster + hover (desktop) + tap-to-play (mobile) --- */
 function VideoCard({
   src,
-  poster,
   className = "",
   controlsAlign = "right",
 }: {
   src: string;
-  poster?: string;
   className?: string;
   controlsAlign?: "left" | "right";
 }) {
+  const wrapRef = useRef<HTMLDivElement>(null);
   const vidRef = useRef<HTMLVideoElement>(null);
+
   const [muted, setMuted] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [pinned, setPinned] = useState(false);
+  const [noHover, setNoHover] = useState(false); // phones/tablets
+  const [posterURL, setPosterURL] = useState<string | null>(null);
+  const posterSetRef = useRef(false);
 
-  const play = useCallback(() => {
-    if (!vidRef.current) return;
-    vidRef.current.muted = muted;
-    vidRef.current.play().catch(() => {});
-  }, [muted]);
-
-  const pauseAndReset = useCallback(() => {
-    if (!vidRef.current) return;
-    vidRef.current.pause();
-    vidRef.current.currentTime = 0;
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(hover: none)");
+    const apply = () => setNoHover(mql.matches);
+    apply();
+    mql.addEventListener?.("change", apply);
+    return () => mql.removeEventListener?.("change", apply);
   }, []);
 
+  const captureFirstFrame = useCallback(async () => {
+    const video = vidRef.current;
+    if (!video || posterSetRef.current) return;
+    try {
+      if (video.readyState < 1) {
+        await new Promise<void>((res) => {
+          const onMeta = () => {
+            video.removeEventListener("loadedmetadata", onMeta);
+            res();
+          };
+          video.addEventListener("loadedmetadata", onMeta, { once: true });
+        });
+      }
+      await new Promise<void>((res) => {
+        const onSeek = () => {
+          video.removeEventListener("seeked", onSeek);
+          res();
+        };
+        video.currentTime = 0;
+        video.addEventListener("seeked", onSeek, { once: true });
+      });
+
+      const w = video.videoWidth || 360;
+      const h = video.videoHeight || 640;
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+
+      ctx.drawImage(video, 0, 0, w, h);
+      const dataURL = canvas.toDataURL("image/webp", 0.72);
+      setPosterURL(dataURL);
+      video.setAttribute("poster", dataURL);
+      posterSetRef.current = true;
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    captureFirstFrame();
+  }, [captureFirstFrame]);
+
   const onEnter = useCallback(() => {
+    if (noHover) return;
     setHovered(true);
-    if (!pinned) play();
-  }, [pinned, play]);
+    if (!pinned && vidRef.current) {
+      vidRef.current.muted = muted;
+      vidRef.current.play().catch(() => {});
+    }
+  }, [noHover, pinned, muted]);
 
   const onLeave = useCallback(() => {
+    if (noHover) return;
     setHovered(false);
-    if (!pinned) pauseAndReset();
-  }, [pinned, pauseAndReset]);
+    if (!pinned && vidRef.current) {
+      vidRef.current.pause();
+      vidRef.current.currentTime = 0;
+    }
+  }, [noHover, pinned]);
+
+  const togglePinned = useCallback(() => {
+    const video = vidRef.current;
+    if (!video) return;
+
+    setPinned((prev) => {
+      const next = !prev;
+      if (next) {
+        video.muted = muted;
+        video.play().catch(() => {});
+      } else {
+        if (!(hovered && !noHover)) {
+          video.pause();
+          video.currentTime = 0;
+        }
+      }
+      return next;
+    });
+  }, [hovered, noHover, muted]);
 
   const toggleMute = useCallback(
     (e: React.MouseEvent) => {
       e.stopPropagation();
-      if (!vidRef.current) return;
+      const v = vidRef.current;
+      if (!v) return;
       const next = !muted;
       setMuted(next);
-      vidRef.current.muted = next;
-      vidRef.current.play().catch(() => {});
+      v.muted = next;
+      if (pinned || (hovered && !noHover)) {
+        v.play().catch(() => {});
+      }
     },
-    [muted]
+    [muted, pinned, hovered, noHover]
   );
-
-  const togglePinned = useCallback(() => {
-    setPinned((prev) => {
-      const next = !prev;
-      if (next) play();
-      else if (!hovered) pauseAndReset();
-      return next;
-    });
-  }, [hovered, pauseAndReset, play]);
 
   return (
     <div
+      ref={wrapRef}
       className={`relative w-full h-full ${className}`}
       onPointerEnter={onEnter}
       onPointerLeave={onLeave}
       onClick={togglePinned}
     >
+      {posterURL && (
+        <img
+          src={posterURL}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
+          draggable={false}
+        />
+      )}
+
       <video
         ref={vidRef}
         src={src}
-        poster={poster}
         muted={muted}
         playsInline
         loop
         preload="metadata"
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute inset-0 h-full w-full object-cover bg-black"
+        onLoadedData={captureFirstFrame}
       />
+
       {(hovered || pinned) && (
         <div
           className={`absolute bottom-2 ${
@@ -112,19 +196,13 @@ const ease = [0.22, 1, 0.36, 1] as const;
 
 const sectionEnter: Variants = {
   hidden: { opacity: 0, y: 24 },
-  show: {
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.65, ease },
-  },
+  show: { opacity: 1, y: 0, transition: { duration: 0.65, ease } },
   exit: { opacity: 0, y: -24, transition: { duration: 0.35, ease } },
 };
 
 const textGroup: Variants = {
   hidden: {},
-  show: {
-    transition: { staggerChildren: 0.08, delayChildren: 0.1 },
-  },
+  show: { transition: { staggerChildren: 0.08, delayChildren: 0.1 } },
 };
 
 const textItem: Variants = {
@@ -134,9 +212,7 @@ const textItem: Variants = {
 
 const cardsGroup: Variants = {
   hidden: {},
-  show: {
-    transition: { staggerChildren: 0.15, delayChildren: 0.25 },
-  },
+  show: { transition: { staggerChildren: 0.15, delayChildren: 0.25 } },
 };
 
 const cardItem: Variants = {
@@ -155,7 +231,79 @@ const cardItem: Variants = {
   }),
 };
 
+/* ---------- Portal Booking Modal ---------- */
+function BookingModal({
+  open,
+  onClose,
+  bookingUrl,
+}: {
+  open: boolean;
+  onClose: () => void;
+  bookingUrl: string;
+}) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!open || !mounted) return null;
+
+  const modal = (
+    <div className="fixed inset-0 z-[999]" role="dialog" aria-modal="true">
+      <div
+        className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+        onClick={onClose}
+      />
+      <div className="absolute inset-0 flex items-center justify-center p-4 sm:p-6 lg:p-8">
+        <div
+          className="flex w-full max-w-6xl bg-white shadow-2xl rounded-xl sm:rounded-2xl overflow-hidden flex-col"
+          style={{
+            height: "min(92svh, 900px)",
+            maxHeight:
+              "calc(100svh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 2rem)",
+            width: "min(96vw, 1100px)",
+          }}
+        >
+          <div className="flex items-center justify-between px-4 py-3 border-b">
+            <p className="text-sm font-medium">Book a Free Consultation</p>
+            <button
+              onClick={onClose}
+              aria-label="Close booking"
+              className="p-2 rounded-full hover:bg-neutral-100"
+            >
+              <CloseIcon className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="flex-1 min-h-0">
+            <iframe
+              src={bookingUrl}
+              title="Booking Widget"
+              className="block w-full h-full"
+              style={{ border: "none" }}
+              scrolling="auto"
+              loading="lazy"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return createPortal(modal, document.body);
+}
+
 export default function Hero() {
+  const [showBooking, setShowBooking] = useState(false);
+  const bookingUrl =
+    "https://api.leadconnectorhq.com/widget/booking/Ky3SDrjMdqqFvoZtt5m9";
+
+  useEffect(() => {
+    if (showBooking) {
+      document.body.classList.add("overflow-hidden", "modal-open");
+    } else {
+      document.body.classList.remove("overflow-hidden", "modal-open");
+    }
+    return () =>
+      document.body.classList.remove("overflow-hidden", "modal-open");
+  }, [showBooking]);
+
   return (
     <AnimatePresence mode="wait">
       <motion.section
@@ -174,9 +322,8 @@ export default function Hero() {
           <div className="absolute inset-0 bg-[radial-gradient(80%_70%_at_12%_12%,rgba(138,92,255,0.18),transparent_60%)]" />
         </div>
 
-        {/* CONTENT WRAPPER */}
         <div className="relative flex min-h-[82vh] items-center pt-[clamp(88px,10vh,128px)]">
-<div className="mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8">
+          <div className="mx-auto w-full max-w-7xl px-2 sm:px-6 lg:px-8">
             <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 py-8 md:py-10 lg:py-12 md:place-items-center">
               {/* LEFT (text) */}
               <motion.header
@@ -221,14 +368,16 @@ export default function Hero() {
                   className="mt-7 flex flex-wrap justify-center md:justify-start items-center gap-x-4 gap-y-3"
                   variants={textItem}
                 >
-                  <Link
-                    href="#book"
+                  {/* BOOKING: opens portal modal */}
+                  <button
+                    type="button"
+                    onClick={() => setShowBooking(true)}
                     aria-label="Book a free call"
                     className="btn-base btn-gradient text-white shadow-md hover:shadow-lg"
                   >
                     <PhoneCall className="size-4 shrink-0" />
                     Book Free Call
-                  </Link>
+                  </button>
 
                   <Link
                     href="#services"
@@ -311,6 +460,13 @@ export default function Hero() {
           </div>
         </div>
 
+        {/* Portal Modal */}
+        <BookingModal
+          open={showBooking}
+          onClose={() => setShowBooking(false)}
+          bookingUrl={bookingUrl}
+        />
+
         <style jsx global>{`
           :root {
             --brand-purple: #8a5cff;
@@ -351,29 +507,40 @@ export default function Hero() {
             color: transparent;
             animation: shine 2.6s linear infinite;
           }
+
           @keyframes shine {
             to {
               background-position: -200% center;
             }
           }
 
+          /* ---------- BUTTON GRADIENT ---------- */
           .btn-gradient {
             background-image: var(--brand-gradient);
             background-size: 200% auto;
             transition: background-position 0.6s ease, box-shadow 0.25s ease,
               transform 0.12s ease;
+            will-change: background-position;
+            background-position: 0% center;
           }
+          /* Desktop/hover behavior stays the same */
           .btn-gradient:hover {
             background-position: 100% center;
           }
-          .btn-gradient:active {
-            transform: translateY(1px);
+
+          /* ✅ Mobile-only: continuous shine (auto) */
+          @media (hover: none) and (pointer: coarse) {
+            .btn-gradient {
+              animation: shine 2.6s linear infinite;
+            }
           }
 
+          /* Outline variant keeps animated border; we’ll make it auto on mobile too */
           .btn-gradient-outline {
             position: relative;
             color: #111;
             isolation: isolate;
+            background: white;
           }
           .btn-gradient-outline::before {
             content: "";
@@ -388,19 +555,19 @@ export default function Hero() {
             mask-composite: exclude;
             z-index: -1;
             background-size: 200% auto;
+          }
+          /* Desktop: animate border on hover only */
+          .btn-gradient-outline:hover::before {
             animation: shine 2.6s linear infinite;
           }
-
-          /* Remove video frame borders */
-          .device-frame,
-          .device-frame-mobile {
-            padding: 0;
-            border-radius: 0;
-            background: transparent;
-            box-shadow: none;
-            backdrop-filter: none;
+          /* ✅ Mobile-only: continuous border shine too (optional) */
+          @media (hover: none) and (pointer: coarse) {
+            .btn-gradient-outline::before {
+              animation: shine 2.6s linear infinite;
+            }
           }
 
+          /* Frame */
           .device,
           .device-m {
             --device-ar: 9 / 19;
@@ -421,6 +588,23 @@ export default function Hero() {
             }
             50% {
               transform: translateY(-10px) rotate(var(--tw-rotate));
+            }
+          }
+
+          /* Hide the fixed navbar only while a modal is open */
+          body.modal-open header[role="banner"] {
+            visibility: hidden;
+          }
+
+          /* ♿ Respect reduced motion */
+          @media (prefers-reduced-motion: reduce) {
+            .text-shine,
+            .btn-gradient,
+            .btn-gradient-outline::before {
+              animation: none !important;
+            }
+            .btn-gradient {
+              transition: box-shadow 0.25s ease, transform 0.12s ease;
             }
           }
         `}</style>

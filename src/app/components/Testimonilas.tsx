@@ -97,7 +97,7 @@ export default function TestimonialsSection({
     <section
       id="testimonil"
       ref={rootRef}
-      className="relative w-full bg-slate-50"
+      className="relative w-full h-auto bg-slate-50"
     >
       <div className="mx-auto max-w-7xl px-6 py-16 md:py-20 lg:px-8">
         <header
