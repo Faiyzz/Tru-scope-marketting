@@ -145,17 +145,29 @@ function VideoCard({
       onPointerEnter={onEnter}
       onPointerLeave={onLeave}
       onClick={togglePinned}
+      /* GPU promote the media layer as well */
+      style={{
+        backfaceVisibility: "hidden",
+        transform: "translateZ(0)",
+        willChange: "transform",
+      }}
     >
+      {/* poster – slightly bleed under the rounded frame to avoid jaggies */}
       {posterURL && (
         <img
           src={posterURL}
           alt=""
           aria-hidden
-          className="absolute inset-0 h-full w-full object-cover select-none pointer-events-none"
           draggable={false}
+          className="absolute -inset-[0.5px] h-[calc(100%+1px)] w-[calc(100%+1px)] object-cover select-none pointer-events-none"
+          style={{
+            backfaceVisibility: "hidden",
+            transform: "translateZ(0)",
+          }}
         />
       )}
 
+      {/* video – same bleed */}
       <video
         ref={vidRef}
         src={src}
@@ -163,8 +175,12 @@ function VideoCard({
         playsInline
         loop
         preload="metadata"
-        className="absolute inset-0 h-full w-full object-cover bg-black"
+        className="absolute -inset-[0.5px] h-[calc(100%+1px)] w-[calc(100%+1px)] object-cover bg-black"
         onLoadedData={captureFirstFrame}
+        style={{
+          backfaceVisibility: "hidden",
+          transform: "translateZ(0)",
+        }}
       />
 
       {(hovered || pinned) && (
@@ -339,7 +355,7 @@ export default function Hero() {
                       Scales
                     </span>
                   </span>
-                  <span className="mt-1 block text-4xl sm:text-4xl md:text-x6l lg:text-7xl font-semibold">
+                  <span className="mt-1 block text-4xl sm:text-4xl md:text-6xl lg:text-7xl font-semibold">
                     Growth that{" "}
                     <span className="text-shine bg-clip-text text-transparent">
                       Lasts
@@ -394,25 +410,25 @@ export default function Hero() {
               <figure aria-hidden className="w-full">
                 {/* MOBILE row */}
                 <motion.div
-                  className="md:hidden flex items-center justify-center gap-3 pt-4"
+                  className="md:hidden flex items-center justify-center gap-3 pt-4 outline-none"
                   variants={cardsGroup}
                   initial="hidden"
                   animate="show"
                 >
                   <motion.div variants={cardItem} custom={-4}>
-                    <div className="device-m relative">
+                    <div className="device relative">
                       <VideoCard src="/images/v1.mp4" controlsAlign="left" />
                     </div>
                   </motion.div>
 
                   <motion.div variants={cardItem} custom={0}>
-                    <div className="device-m relative">
+                    <div className="device relative">
                       <VideoCard src="/images/v2.mp4" />
                     </div>
                   </motion.div>
 
                   <motion.div variants={cardItem} custom={4}>
-                    <div className="device-m relative">
+                    <div className="device relative">
                       <VideoCard src="/images/v3.mp4" />
                     </div>
                   </motion.div>
@@ -523,19 +539,16 @@ export default function Hero() {
             will-change: background-position;
             background-position: 0% center;
           }
-          /* Desktop/hover behavior stays the same */
           .btn-gradient:hover {
             background-position: 100% center;
           }
 
-          /* ✅ Mobile-only: continuous shine (auto) */
           @media (hover: none) and (pointer: coarse) {
             .btn-gradient {
               animation: shine 2.6s linear infinite;
             }
           }
 
-          /* Outline variant keeps animated border; we’ll make it auto on mobile too */
           .btn-gradient-outline {
             position: relative;
             color: #111;
@@ -556,30 +569,41 @@ export default function Hero() {
             z-index: -1;
             background-size: 200% auto;
           }
-          /* Desktop: animate border on hover only */
           .btn-gradient-outline:hover::before {
             animation: shine 2.6s linear infinite;
           }
-          /* ✅ Mobile-only: continuous border shine too (optional) */
           @media (hover: none) and (pointer: coarse) {
             .btn-gradient-outline::before {
               animation: shine 2.6s linear infinite;
             }
           }
 
-          /* Frame */
+          /* --------- DEVICE FRAME (rounded, rotated) ---------
+             Anti-aliasing fixes for rotated rounded rectangles with video:
+             - overflow: clip (Chromium)
+             - tiny hairline outline to help AA
+             - translateZ(0) + backface-visibility
+             - WebKit mask to force compositing/AA
+          */
           .device,
           .device-m {
             --device-ar: 9 / 19;
             position: relative;
             width: clamp(120px, 11vw, 160px);
             aspect-ratio: var(--device-ar);
-            border-radius: 1.1rem;
-            overflow: hidden;
+            border-radius: 1.2rem;
+            overflow: clip; /* better than hidden on Chrome for transforms */
+            outline: 0.5px solid rgba(0, 0, 0, 0.06);
+            backface-visibility: hidden;
+            transform: translateZ(0);
+            will-change: transform;
+            -webkit-mask-image: -webkit-radial-gradient(white, black);
           }
 
+          /* Soft float */
           .float-soft {
             animation: float 6s ease-in-out infinite;
+            will-change: transform;
           }
           @keyframes float {
             0%,
