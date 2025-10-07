@@ -164,10 +164,6 @@ export default function FloatingNavbar({
           </div>
 
           <div className="px-4 pb-8">
-            <MobileLink href="/" onClick={() => setMobileOpen(false)}>
-              Home
-            </MobileLink>
-
             <MobileGroup
               label="Solutions"
               items={SOLUTIONS}
@@ -181,7 +177,12 @@ export default function FloatingNavbar({
               items={SERVICES}
               onItem={() => setMobileOpen(false)}
             />
-
+            <MobileLink
+              href="/launchyoursite"
+              onClick={() => setMobileOpen(false)}
+            >
+              Launch YourSite
+            </MobileLink>
             {/* Mobile CTA — same outline style */}
             <button
               type="button"

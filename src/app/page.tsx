@@ -9,6 +9,7 @@ import ServicesVSLSection from "./components/ServicesVSL";
 import StatsSection from "./components/State";
 import TestimonialsSection from "./components/Testimonilas";
 import TalentServicesSection from "./components/Services";
+import BuildsiteCTA from "./components/BuildwebsiteCTA";
 
 export default function Page() {
   return (
@@ -20,6 +21,7 @@ export default function Page() {
       <TalentServicesSection />
       <PredictableGrowthSection />
       <TestimonialsSection />
+      <BuildsiteCTA />
       <ReservationSection />
       <FaqSection />
     </>
