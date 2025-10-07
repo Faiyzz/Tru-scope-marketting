@@ -74,18 +74,19 @@ export default function FloatingNavbar({
               aria-label={`${brand} home`}
               className="inline-flex items-center focus-gradient"
             >
-             <h1 className="text-gradient font-extrabold text-3xl sm:text-4xl tracking-tight">
-  TruScope
-</h1>
+              <h1 className="text-gradient font-extrabold text-3xl sm:text-4xl tracking-tight">
+                TruScope
+              </h1>
             </Link>
 
             {/* Desktop menu */}
             <div className="hidden md:flex items-center gap-8">
               <Dropdown label="Solutions" items={SOLUTIONS} />
               <NavLink href="/#services">About us</NavLink>
+
               <Dropdown label="Services" items={SERVICES} />
 
-              {/* CTA — MATCHES HERO OUTLINE STYLE */}
+              <NavLink href="/launchyoursite">Launch Your Site</NavLink>
               <button
                 type="button"
                 onClick={() => setShowBooking(true)}
