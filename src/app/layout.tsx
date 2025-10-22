@@ -6,9 +6,9 @@ import SmoothScroll from "./components/SmoothScroll";
 import { ReactNode } from "react";
 
 const siteUrl = "https://truscope.us"; // your actual domain
-const ogImage = "/logo.png"; // full-size logo for OpenGraph
-const faviconIco = "/favicon.ico"; // classic favicon
-const metaIcon = "/metaicon.png"; // secondary PNG icon for everything else
+const ogImage = "/images/logo.png"; // full-size logo for OpenGraph
+const faviconIco = "/images/favicon.ico"; // classic favicon
+const metaIcon = "/images/metaicon.png"; // secondary PNG icon for everything else
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
