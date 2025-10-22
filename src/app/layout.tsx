@@ -5,50 +5,50 @@ import Footer from "./components/Footer";
 import SmoothScroll from "./components/SmoothScroll";
 import { ReactNode } from "react";
 
-// ✅ Put your real production URL here
-const siteUrl = "https://truscope.example.com";
-const ogImage = "/"; // place in /public
-const faviconIco = "/images/favicon.ico"; // /public
-const iconPng16 = "/images/metaicon.png"; // /public
-const iconPng32 = "/images/metaicon.png"; // /public
-const iconPng192 = "/images/metaicon.png"; // /public
-const appleTouch = "/images/metaicon.png"; // /public
-const manifest = "/site.webmanifest"; // /public
+const siteUrl = "https://truscope.us"; // your actual domain
+const ogImage = "/logo.png"; // full-size logo for OpenGraph
+const faviconIco = "/favicon.ico"; // classic favicon
+const metaIcon = "/metaicon.png"; // secondary PNG icon for everything else
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: "TruScope",
-  description: "Marketing site",
+  description:
+    "Welcome to our marketing agency, where creativity meets strategy. Unlock the full potential of your brand with our tailored solutions in digital marketing.",
   openGraph: {
-    title: "TruScope",
-    description: "Marketing site",
+    title: "TruScope — Marketing Agency",
+    description:
+      "Unlock the full potential of your brand with our tailored digital marketing solutions.",
     url: siteUrl,
     siteName: "TruScope",
-    images: [{ url: ogImage, width: 1200, height: 630, alt: "TruScope" }],
+    images: [
+      { url: ogImage, width: 1200, height: 630, alt: "TruScope Logo" },
+    ],
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "TruScope",
-    description: "Marketing site",
+    title: "TruScope — Marketing Agency",
+    description:
+      "Unlock the full potential of your brand with our tailored digital marketing solutions.",
     images: [ogImage],
   },
   icons: {
     icon: [
-      { url: faviconIco }, // classic
-      { url: iconPng16, type: "image/png", sizes: "16x16" },
-      { url: iconPng32, type: "image/png", sizes: "32x32" },
-      { url: iconPng192, type: "image/png", sizes: "192x192" },
+      { url: faviconIco },
+      { url: metaIcon, type: "image/png", sizes: "16x16" },
+      { url: metaIcon, type: "image/png", sizes: "32x32" },
+      { url: metaIcon, type: "image/png", sizes: "192x192" },
     ],
-    apple: [{ url: appleTouch, sizes: "180x180" }],
+    apple: [{ url: metaIcon, sizes: "180x180" }],
     shortcut: [faviconIco],
   },
-  manifest,
+  manifest: "/site.webmanifest",
   themeColor: "#ffffff",
   other: {
     "msapplication-TileColor": "#ffffff",
-    "msapplication-config": "/browserconfig.xml", // optional for Windows tiles
+    "msapplication-config": "/browserconfig.xml",
   },
 };
 
